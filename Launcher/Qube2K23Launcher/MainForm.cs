@@ -297,7 +297,7 @@ public sealed class MainForm : Form
         var desc = MutedLabel("Play local installations. Stay connected with community updates.", 18, 82, 350);
         var button = new Button { Text = "COMMUNITY INFO  ›", Location = new Point(18, 116), Size = new Size(220, 32) };
         StyleButton(button, Color.FromArgb(60, 26, 105));
-        button.Click += (_, _) => MessageBox.Show("QUBE community features can be connected here when an official community endpoint is configured.", "QUBE Community", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        button.Click += (_, _) => ShowSectionPage("QUBE COMMUNITY", "Community updates and connection status.", "COMMUNITY STATUS", "Community updates can be added when an official QUBE endpoint is configured. The status checker only verifies the URL you provide; it does not provide official NBA 2K23 multiplayer.", "OPEN SETTINGS", ShowSettingsDialog);
         p.Controls.AddRange(new Control[] { heading, desc, button });
         return p;
     }
