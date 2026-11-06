@@ -35,85 +35,107 @@ public sealed class MainForm : Form
 
     private void BuildInterface()
     {
-        var shell = new Panel { Dock = DockStyle.Fill, BackColor = Color.FromArgb(5, 8, 17) };
+        // Compact, single-surface layout inspired by the approved purple launcher reference.
+        var shell = new Panel { Dock = DockStyle.Fill, BackColor = Color.FromArgb(17, 9, 31) };
         Controls.Add(shell);
 
-        var top = new Panel { Dock = DockStyle.Top, Height = 82, BackColor = Color.FromArgb(8, 12, 24) };
+        var top = new Panel { Dock = DockStyle.Top, Height = 66, BackColor = Color.FromArgb(55, 19, 105) };
         top.Paint += (_, e) =>
         {
-            using var b = new LinearGradientBrush(top.ClientRectangle, Color.FromArgb(17, 27, 51), Color.FromArgb(5, 8, 17), 0f);
-            e.Graphics.FillRectangle(b, top.ClientRectangle);
-            using var p = new Pen(Color.FromArgb(40, 75, 130), 1);
-            e.Graphics.DrawLine(p, 0, top.Height - 1, top.Width, top.Height - 1);
+            using var brush = new LinearGradientBrush(top.ClientRectangle, Color.FromArgb(88, 30, 164), Color.FromArgb(42, 15, 83), 0f);
+            e.Graphics.FillRectangle(brush, top.ClientRectangle);
+            using var line = new Pen(Color.FromArgb(95, 145, 75, 220));
+            e.Graphics.DrawLine(line, 0, top.Height - 1, top.Width, top.Height - 1);
         };
-        var logo = new Label { Text = "QUBE", Location = new Point(28, 8), Size = new Size(190, 42), Font = new Font("Segoe UI Black", 27F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.White, BackColor = Color.Transparent };
-        var logoSub = new Label { Text = "2K23", Location = new Point(30, 47), Size = new Size(90, 25), Font = new Font("Segoe UI Black", 17F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.FromArgb(255, 45, 65), BackColor = Color.Transparent };
-        top.Controls.AddRange(new Control[] { logo, logoSub });
-        AddTopTab(top, "HOME", 250);
-        AddTopTab(top, "PLAY", 390);
-        AddTopTab(top, "UPGRADES", 505);
-        AddTopTab(top, "SETTINGS", 675);
-        AddTopTab(top, "MORE ⌄", 850);
+        var mark = new Label { Text = "Q", Location = new Point(22, 10), Size = new Size(42, 44), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI Black", 23F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.White, BackColor = Color.FromArgb(133, 54, 255) };
+        var wordmark = new Label { Text = "QUBE 2K23", Location = new Point(72, 13), Size = new Size(170, 38), Font = new Font("Segoe UI Black", 18F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.White, BackColor = Color.Transparent };
+        top.Controls.Add(mark); top.Controls.Add(wordmark);
+        AddTopTab(top, "PLAY", 250);
+        AddTopTab(top, "UPGRADES", 350);
+        AddTopTab(top, "MYCAREER", 470);
+        AddTopTab(top, "STORE", 605);
+        AddTopTab(top, "COMMUNITY", 700);
+        AddTopTab(top, "SETTINGS", 840);
+        AddTopTab(top, "SUPPORT", 960);
+        var online = new Label { Text = "●  LOCAL LAUNCHER", Location = new Point(1090, 0), Size = new Size(170, 66), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = Color.FromArgb(195, 255, 225), BackColor = Color.Transparent, Anchor = AnchorStyles.Top | AnchorStyles.Right };
+        top.Controls.Add(online);
         shell.Controls.Add(top);
 
-        var side = new Panel { Dock = DockStyle.Left, Width = 176, BackColor = Color.FromArgb(7, 11, 22) };
-        side.Paint += (_, e) =>
-        {
-            using var p = new Pen(Color.FromArgb(35, 75, 125), 1);
-            e.Graphics.DrawLine(p, side.Width - 1, 0, side.Width - 1, side.Height);
-        };
-        AddSideItem(side, "⌂   Home", 82);
-        AddSideItem(side, "⚑   Play", 142);
-        AddSideItem(side, "▥   MyCAREER", 202);
-        AddSideItem(side, "🛒   Store", 262);
-        AddSideItem(side, "⚙   Settings", 322);
-        AddSideItem(side, "?   Support", 382);
-        shell.Controls.Add(side);
-
-        var footer = new Panel { Dock = DockStyle.Bottom, Height = 58, BackColor = Color.FromArgb(5, 8, 16) };
-        footer.Paint += (_, e) =>
-        {
-            using var p = new Pen(Color.FromArgb(40, 65, 105));
-            e.Graphics.DrawLine(p, 0, 0, footer.Width, 0);
-        };
-        footer.Controls.Add(FooterLabel("●  QUBE 2K23", 28, Color.FromArgb(105, 180, 255)));
-        footer.Controls.Add(FooterLabel("GAME LAUNCHER", 190, Color.FromArgb(155, 170, 195)));
-        footer.Controls.Add(FooterLabel("Welcome to QUBE 2K23. Your court is waiting.", 365, Color.Gainsboro));
-        var slogan = FooterLabel("BUILT FOR THE COMMUNITY", 0, Color.FromArgb(160, 170, 195));
-        slogan.Anchor = AnchorStyles.Right | AnchorStyles.Top;
-        slogan.Location = new Point(Math.Max(footer.Width - 250, 700), 19);
-        footer.Resize += (_, _) => slogan.Location = new Point(Math.Max(footer.Width - 270, 700), 19);
-        footer.Controls.Add(slogan);
+        var footer = new Panel { Dock = DockStyle.Bottom, Height = 34, BackColor = Color.FromArgb(13, 7, 24) };
+        footer.Controls.Add(FooterLabel("QUBE 2K23  •  BUILT FOR THE COMMUNITY", 22, Color.FromArgb(165, 150, 190)));
         shell.Controls.Add(footer);
 
-        var body = new Panel { Dock = DockStyle.Fill, BackColor = Color.FromArgb(7, 11, 22), Padding = new Padding(24, 18, 24, 14) };
-        body.Paint += (_, e) => DrawArenaBackdrop(e.Graphics, body.ClientRectangle);
+        var body = new Panel { Dock = DockStyle.Fill, BackColor = Color.FromArgb(19, 10, 34), Padding = new Padding(28, 22, 28, 18) };
+        body.Paint += (_, e) =>
+        {
+            using var bg = new LinearGradientBrush(body.ClientRectangle, Color.FromArgb(54, 22, 91), Color.FromArgb(13, 7, 24), 90F);
+            e.Graphics.FillRectangle(bg, body.ClientRectangle);
+            using var glow = new SolidBrush(Color.FromArgb(22, 165, 80, 255));
+            e.Graphics.FillEllipse(glow, body.Width / 2, -220, 700, 520);
+        };
         shell.Controls.Add(body);
 
-        var hero = new Panel { Dock = DockStyle.Top, Height = 500, BackColor = Color.FromArgb(9, 15, 31) };
-        hero.Paint += (_, e) => DrawHero(e.Graphics, hero.ClientRectangle);
+        var hero = new Panel { Dock = DockStyle.Top, Height = 470, BackColor = Color.FromArgb(25, 12, 43) };
+        hero.Paint += (_, e) =>
+        {
+            using var bg = new LinearGradientBrush(hero.ClientRectangle, Color.FromArgb(43, 18, 77), Color.FromArgb(13, 7, 24), 0F);
+            e.Graphics.FillRectangle(bg, hero.ClientRectangle);
+            DrawHero(e.Graphics, hero.ClientRectangle);
+            using var shade = new SolidBrush(Color.FromArgb(100, 15, 5, 27));
+            e.Graphics.FillRectangle(shade, 0, 0, hero.Width, hero.Height);
+        };
         body.Controls.Add(hero);
 
-        var tagline = new Label { Text = "PLAY. COMPETE. DOMINATE.", Location = new Point(38, 238), Size = new Size(520, 42), Font = new Font("Segoe UI", 17F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.White, BackColor = Color.Transparent };
-        hero.Controls.Add(tagline);
-        _playButton.Text = "▶    PLAY NOW";
-        _playButton.Location = new Point(42, 310);
-        _playButton.Size = new Size(430, 78);
-        _playButton.Font = new Font("Segoe UI Black", 20F, FontStyle.Bold | FontStyle.Italic);
-        StyleButton(_playButton, Color.FromArgb(0, 75, 220));
+        var left = new Panel { Location = new Point(26, 26), Size = new Size(550, 420), BackColor = Color.Transparent };
+        hero.Controls.Add(left);
+        var update = MakeCard("LAUNCHER STATUS", Color.FromArgb(66, 31, 105));
+        update.Location = new Point(0, 0); update.Size = new Size(550, 92); update.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        update.Controls.Add(MutedLabel("QUBE 2K23 launcher is up to date. Select your game folder to get started.", 18, 43, 510));
+        left.Controls.Add(update);
+
+        var welcome = new Label { Text = "WELCOME TO QUBE", Location = new Point(0, 120), Size = new Size(500, 28), Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = Color.FromArgb(205, 160, 255), BackColor = Color.Transparent };
+        var title = new Label { Text = "QUBE 2K23", Location = new Point(0, 150), Size = new Size(550, 88), Font = new Font("Segoe UI Black", 54F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.White, BackColor = Color.Transparent };
+        var subtitle = new Label { Text = "PLAY. COMPETE. DOMINATE.", Location = new Point(4, 240), Size = new Size(520, 42), Font = new Font("Segoe UI", 19F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.White, BackColor = Color.Transparent };
+        var description = new Label { Text = "Your court is waiting. Choose a supported local game installation to begin.", Location = new Point(4, 288), Size = new Size(510, 48), Font = new Font("Segoe UI", 11F), ForeColor = Color.FromArgb(225, 215, 238), BackColor = Color.Transparent };
+        left.Controls.AddRange(new Control[] { welcome, title, subtitle, description });
+
+        _playButton.Text = "▶   PLAY NOW";
+        _playButton.Location = new Point(0, 350); _playButton.Size = new Size(245, 58);
+        _playButton.Font = new Font("Segoe UI Black", 16F, FontStyle.Bold);
+        StyleButton(_playButton, Color.FromArgb(126, 39, 238));
         _playButton.Enabled = false;
         _playButton.Click += (_, _) => LaunchLocalGame();
-        hero.Controls.Add(_playButton);
+        left.Controls.Add(_playButton);
 
-        var cards = new TableLayoutPanel { Dock = DockStyle.Bottom, Height = 172, ColumnCount = 3, RowCount = 1, BackColor = Color.Transparent, Padding = new Padding(0, 8, 0, 0) };
-        cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 34F));
-        cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
-        cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
+        var choose = new Button { Text = "GAME FOLDER", Location = new Point(258, 350), Size = new Size(190, 58) };
+        StyleButton(choose, Color.FromArgb(50, 31, 70));
+        choose.Click += (_, _) => ChooseGameFolder();
+        left.Controls.Add(choose);
+
+        var status = MakeCard("STATUS", Color.FromArgb(55, 30, 83));
+        status.Location = new Point(600, 24); status.Size = new Size(370, 370); status.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        status.Controls.Add(MutedLabel("What has to be set before you can play.", 20, 43, 330));
+        var gameTitle = new Label { Text = "Game installation", Location = new Point(20, 92), Size = new Size(220, 24), Font = new Font("Segoe UI", 11F, FontStyle.Bold), ForeColor = Color.White, BackColor = Color.Transparent };
+        _installStatus.Location = new Point(20, 119); _installStatus.Size = new Size(320, 25); _installStatus.ForeColor = Color.FromArgb(255, 190, 90); _installStatus.BackColor = Color.Transparent;
+        _gamePath.Location = new Point(20, 147); _gamePath.Size = new Size(325, 38); _gamePath.AutoEllipsis = true; _gamePath.ForeColor = Color.FromArgb(220, 210, 235); _gamePath.BackColor = Color.Transparent;
+        var serverTitle = new Label { Text = "Community endpoint", Location = new Point(20, 220), Size = new Size(240, 24), Font = new Font("Segoe UI", 11F, FontStyle.Bold), ForeColor = Color.White, BackColor = Color.Transparent };
+        _serverStatus.Location = new Point(20, 248); _serverStatus.Size = new Size(325, 28); _serverStatus.ForeColor = Color.FromArgb(180, 205, 190); _serverStatus.BackColor = Color.Transparent;
+        var check = new Button { Text = "CHECK STATUS", Location = new Point(20, 300), Size = new Size(150, 38) };
+        StyleButton(check, Color.FromArgb(88, 45, 135));
+        check.Click += async (_, _) => { SaveSettings(); await RefreshServerAsync(); };
+        status.Controls.AddRange(new Control[] { gameTitle, _installStatus, _gamePath, serverTitle, _serverStatus, check });
+        hero.Controls.Add(status);
+
+        var cards = new TableLayoutPanel { Dock = DockStyle.Bottom, Height = 90, ColumnCount = 3, RowCount = 1, BackColor = Color.Transparent, Padding = new Padding(0, 10, 0, 0) };
+        for (int i = 0; i < 3; i++) cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.333F));
         body.Controls.Add(cards);
-        cards.Controls.Add(BuildInstallCard(), 0, 0);
-        cards.Controls.Add(BuildServerCard(), 1, 0);
-        cards.Controls.Add(BuildRewardsCard(), 2, 0);
-        body.Controls.SetChildIndex(cards, 0);
+        var installStrip = MakeCard("GAME FOLDER", Color.FromArgb(39, 25, 55));
+        installStrip.Controls.Add(MutedLabel("Choose or scan for your local installation", 16, 43, 330));
+        var playerStrip = MakeCard("PLAYER PROFILE", Color.FromArgb(39, 25, 55));
+        playerStrip.Controls.Add(MutedLabel("Local launcher profile", 16, 43, 330));
+        var communityStrip = MakeCard("COMMUNITY", Color.FromArgb(39, 25, 55));
+        communityStrip.Controls.Add(MutedLabel("Optional status endpoint only", 16, 43, 330));
+        cards.Controls.Add(installStrip, 0, 0); cards.Controls.Add(playerStrip, 1, 0); cards.Controls.Add(communityStrip, 2, 0);
     }
 
     private static void DrawArenaBackdrop(Graphics g, Rectangle r)
