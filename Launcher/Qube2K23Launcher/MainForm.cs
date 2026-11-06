@@ -379,21 +379,101 @@ public sealed class MainForm : Form
         _gameExe = exe; _gamePath.Text = exe; _installStatus.Text = "●  GAME FOUND"; _installStatus.ForeColor = Color.Lime; _playButton.Enabled = true; SaveSettings();
     }
 
-    private void LaunchLocalGame()
+    private async void LaunchLocalGame()
     {
         if (string.IsNullOrWhiteSpace(_gameExe) || !File.Exists(_gameExe))
         {
-            _playButton.Enabled = false; MessageBox.Show("The selected executable is missing. Scan again to locate the game.", "Game files missing", MessageBoxButtons.OK, MessageBoxIcon.Warning); return;
+            _playButton.Enabled = false;
+            MessageBox.Show("The selected executable is missing. Scan again to locate the game.", "Game files missing", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
         }
+
+        _playButton.Enabled = false;
+        _installStatus.Text = "●  STARTING GAME…";
+        _installStatus.ForeColor = Color.FromArgb(255, 190, 70);
+        var logDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "QUBE", "2K23Launcher", "Logs");
+        var logPath = Path.Combine(logDirectory, "last-launch.txt");
+
         try
         {
-            Process.Start(new ProcessStartInfo { FileName = _gameExe, WorkingDirectory = Path.GetDirectoryName(_gameExe)!, UseShellExecute = true });
-            _installStatus.Text = "●  LAUNCH REQUEST SENT";
+            Directory.CreateDirectory(logDirectory);
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = _gameExe,
+                WorkingDirectory = Path.GetDirectoryName(_gameExe)!,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
+            if (!process.Start())
+                throw new InvalidOperationException("Windows did not create a game process.");
+
+            await File.WriteAllTextAsync(logPath,
+                $"Launch time: {DateTimeOffset.Now:O}{Environment.NewLine}" +
+                $"Executable: {_gameExe}{Environment.NewLine}" +
+                $"Working directory: {startInfo.WorkingDirectory}{Environment.NewLine}" +
+                $"Process ID: {process.Id}{Environment.NewLine}" +
+                $"Initial status: process started{Environment.NewLine}");
+
+            // Give the game time to initialize before deciding whether it exited immediately.
+            await Task.Delay(TimeSpan.FromSeconds(12));
+            if (process.HasExited)
+            {
+                var exitCode = process.ExitCode;
+                await File.AppendAllTextAsync(logPath, $"Exited after startup; exit code: {exitCode}{Environment.NewLine}");
+                _installStatus.Text = $"●  GAME EXITED ({exitCode})";
+                _installStatus.ForeColor = Color.OrangeRed;
+                MessageBox.Show(
+                    $"The game process started, then exited after startup. Exit code: {exitCode}.\n\n" +
+                    $"A diagnostic log was saved here:\n{logPath}\n\n" +
+                    "This can happen because of missing/corrupt game files, missing runtime components, graphics-driver issues, or an ownership/DRM check. This launcher does not bypass ownership checks.",
+                    "Game closed during startup", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            else
+            {
+                _installStatus.Text = "●  GAME RUNNING";
+                _installStatus.ForeColor = Color.Lime;
+                _ = MonitorGameExitAsync(process, logPath);
+            }
         }
         catch (Exception ex)
         {
-            MessageBox.Show("Windows could not start this executable. If the installation requires Steam or another ownership check, this launcher will not bypass it.\n\n" + ex.Message, "Launch failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            _installStatus.Text = "●  LAUNCH FAILED";
+            _installStatus.ForeColor = Color.OrangeRed;
+            try
+            {
+                Directory.CreateDirectory(logDirectory);
+                await File.WriteAllTextAsync(logPath, $"Launch failed: {DateTimeOffset.Now:O}{Environment.NewLine}{ex}");
+            }
+            catch { }
+            MessageBox.Show("Windows could not start the game.\n\n" + ex.Message, "Launch failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+        finally
+        {
+            _playButton.Enabled = _gameExe is not null && File.Exists(_gameExe);
+        }
+    }
+
+    private async Task MonitorGameExitAsync(Process process, string logPath)
+    {
+        try
+        {
+            await Task.Run(() => process.WaitForExit());
+            var exitCode = process.ExitCode;
+            await File.AppendAllTextAsync(logPath, $"Game process exited at {DateTimeOffset.Now:O}; exit code: {exitCode}{Environment.NewLine}");
+            if (!IsDisposed && IsHandleCreated)
+                BeginInvoke(() =>
+                {
+                    _installStatus.Text = $"●  GAME CLOSED ({exitCode})";
+                    _installStatus.ForeColor = Color.FromArgb(255, 190, 70);
+                });
+        }
+        catch (Exception ex)
+        {
+            try { await File.AppendAllTextAsync(logPath, $"Monitor error: {ex.Message}{Environment.NewLine}"); } catch { }
+        }
+        finally { process.Dispose(); }
     }
 
     private async Task RefreshServerAsync()
