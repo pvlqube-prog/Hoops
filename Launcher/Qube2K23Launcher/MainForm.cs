@@ -9,24 +9,22 @@ public sealed class MainForm : Form
 {
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(5) };
     private readonly Label _gamePath = new();
-    private readonly Label _scanStatus = new();
+    private readonly Label _installStatus = new();
     private readonly Label _serverStatus = new();
     private readonly TextBox _serverUrl = new();
     private readonly Button _playButton = new();
     private readonly Button _scanButton = new();
-    private readonly string _settingsPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "QUBE", "2K23Launcher", "settings.json");
+    private readonly string _settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "QUBE", "2K23Launcher", "settings.json");
     private string? _gameExe;
     private bool _scanning;
 
     public MainForm()
     {
         Text = "QUBE 2K23";
-        MinimumSize = new Size(900, 680);
-        Size = new Size(1180, 820);
+        MinimumSize = new Size(1050, 720);
+        Size = new Size(1440, 900);
         StartPosition = FormStartPosition.CenterScreen;
-        BackColor = Color.FromArgb(9, 13, 24);
+        BackColor = Color.FromArgb(5, 8, 17);
         ForeColor = Color.White;
         Font = new Font("Segoe UI", 10F);
         DoubleBuffered = true;
@@ -37,260 +35,332 @@ public sealed class MainForm : Form
 
     private void BuildInterface()
     {
-        var header = new Panel { Dock = DockStyle.Top, Height = 118, BackColor = Color.FromArgb(8, 12, 22), Padding = new Padding(30, 18, 25, 12) };
-        header.Paint += (_, e) =>
-        {
-            using var brush = new LinearGradientBrush(header.ClientRectangle, Color.FromArgb(27, 42, 75), Color.FromArgb(12, 17, 31), 0f);
-            e.Graphics.FillRectangle(brush, header.ClientRectangle);
-        };
-        var brand = new Label { Text = "QUBE", AutoSize = true, Font = new Font("Segoe UI", 30F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(28, 13), BackColor = Color.Transparent };
-        var tag = new Label { Text = "2K23  •  PC GAME LAUNCHER", AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = Color.FromArgb(125, 167, 255), Location = new Point(32, 65), BackColor = Color.Transparent };
-        header.Controls.Add(brand); header.Controls.Add(tag); Controls.Add(header);
+        var shell = new Panel { Dock = DockStyle.Fill, BackColor = Color.FromArgb(5, 8, 17) };
+        Controls.Add(shell);
 
-        var content = new Panel { Dock = DockStyle.Fill, Padding = new Padding(28), BackColor = Color.FromArgb(7, 10, 18) };
-        content.Paint += (_, e) =>
+        var top = new Panel { Dock = DockStyle.Top, Height = 82, BackColor = Color.FromArgb(8, 12, 24) };
+        top.Paint += (_, e) =>
         {
-            using var bg = new LinearGradientBrush(content.ClientRectangle, Color.FromArgb(12, 20, 36), Color.FromArgb(5, 8, 15), 90f);
-            e.Graphics.FillRectangle(bg, content.ClientRectangle);
-            using var gridPen = new Pen(Color.FromArgb(13, 70, 112, 170), 1);
-            for (int x = 0; x < content.Width; x += 42) e.Graphics.DrawLine(gridPen, x, 0, x, content.Height);
-            for (int y = 0; y < content.Height; y += 42) e.Graphics.DrawLine(gridPen, 0, y, content.Width, y);
+            using var b = new LinearGradientBrush(top.ClientRectangle, Color.FromArgb(17, 27, 51), Color.FromArgb(5, 8, 17), 0f);
+            e.Graphics.FillRectangle(b, top.ClientRectangle);
+            using var p = new Pen(Color.FromArgb(40, 75, 130), 1);
+            e.Graphics.DrawLine(p, 0, top.Height - 1, top.Width, top.Height - 1);
         };
-        Controls.Add(content);
+        var logo = new Label { Text = "QUBE", Location = new Point(28, 8), Size = new Size(190, 42), Font = new Font("Segoe UI Black", 27F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.White, BackColor = Color.Transparent };
+        var logoSub = new Label { Text = "2K23", Location = new Point(30, 47), Size = new Size(90, 25), Font = new Font("Segoe UI Black", 17F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.FromArgb(255, 45, 65), BackColor = Color.Transparent };
+        top.Controls.AddRange(new Control[] { logo, logoSub });
+        AddTopTab(top, "HOME", 250, true);
+        AddTopTab(top, "PLAY", 390, false);
+        AddTopTab(top, "UPGRADES", 505, false);
+        AddTopTab(top, "SETTINGS", 675, false);
+        AddTopTab(top, "MORE ⌄", 850, false);
+        shell.Controls.Add(top);
 
-        var hero = MakeCard(new Point(28, 20), new Size(1060, 250), Color.FromArgb(21, 32, 56), Color.FromArgb(12, 19, 36));
-        hero.Paint += (_, e) => DrawHeroArtwork(e.Graphics, hero.ClientRectangle);\n        var eyebrow = new Label { Text = "YOUR NEXT GAME STARTS HERE", AutoSize = true, Location = new Point(32, 24), ForeColor = Color.FromArgb(126, 166, 255), Font = new Font("Segoe UI", 9F, FontStyle.Bold), BackColor = Color.Transparent };
-        var heading = new Label { Text = "NBA 2K23", AutoSize = true, Location = new Point(28, 58), ForeColor = Color.White, Font = new Font("Segoe UI", 38F, FontStyle.Bold), BackColor = Color.Transparent };
-        var sub = new Label { Text = "Find the game on this PC and launch from its local installation.", AutoSize = true, Location = new Point(34, 125), ForeColor = Color.FromArgb(176, 190, 216), BackColor = Color.Transparent };
-        _playButton.Text = "▶   PLAY NOW";
-        StyleButton(_playButton, new Point(34, 174), new Size(250, 54), Color.FromArgb(28, 104, 255));\n        _playButton.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+        var side = new Panel { Dock = DockStyle.Left, Width = 176, BackColor = Color.FromArgb(7, 11, 22) };
+        side.Paint += (_, e) =>
+        {
+            using var p = new Pen(Color.FromArgb(35, 75, 125), 1);
+            e.Graphics.DrawLine(p, side.Width - 1, 0, side.Width - 1, side.Height);
+        };
+        AddSideItem(side, "⌂   Home", 82, true);
+        AddSideItem(side, "⚑   Play", 142, false);
+        AddSideItem(side, "▥   MyCAREER", 202, false);
+        AddSideItem(side, "🛒   Store", 262, false);
+        AddSideItem(side, "⚙   Settings", 322, false);
+        AddSideItem(side, "?   Support", 382, false);
+        shell.Controls.Add(side);
+
+        var footer = new Panel { Dock = DockStyle.Bottom, Height = 58, BackColor = Color.FromArgb(5, 8, 16) };
+        footer.Paint += (_, e) =>
+        {
+            using var p = new Pen(Color.FromArgb(40, 65, 105));
+            e.Graphics.DrawLine(p, 0, 0, footer.Width, 0);
+        };
+        footer.Controls.Add(FooterLabel("◉  CPU —", 28, Color.Gainsboro));
+        footer.Controls.Add(FooterLabel("▣  GPU —", 145, Color.FromArgb(40, 255, 110)));
+        footer.Controls.Add(FooterLabel("▥  FPS —", 270, Color.FromArgb(40, 255, 110)));
+        footer.Controls.Add(FooterLabel("NEW", 405, Color.FromArgb(255, 55, 65)));
+        footer.Controls.Add(FooterLabel("Welcome to QUBE 2K23!  Your court is waiting.", 465, Color.Gainsboro));
+        var slogan = FooterLabel("BUILT FOR THE COMMUNITY", 0, Color.FromArgb(160, 170, 195));
+        slogan.Anchor = AnchorStyles.Right | AnchorStyles.Top;
+        slogan.Location = new Point(Math.Max(footer.Width - 250, 700), 19);
+        footer.Resize += (_, _) => slogan.Location = new Point(Math.Max(footer.Width - 270, 700), 19);
+        footer.Controls.Add(slogan);
+        shell.Controls.Add(footer);
+
+        var body = new Panel { Dock = DockStyle.Fill, BackColor = Color.FromArgb(7, 11, 22), Padding = new Padding(24, 18, 24, 14) };
+        body.Paint += (_, e) => DrawArenaBackdrop(e.Graphics, body.ClientRectangle);
+        shell.Controls.Add(body);
+
+        var hero = new Panel { Dock = DockStyle.Top, Height = 500, BackColor = Color.FromArgb(9, 15, 31) };
+        hero.Paint += (_, e) => DrawHero(e.Graphics, hero.ClientRectangle);
+        body.Controls.Add(hero);
+
+        var tagline = new Label { Text = "PLAY. COMPETE. DOMINATE.", Location = new Point(38, 238), Size = new Size(520, 42), Font = new Font("Segoe UI", 17F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.White, BackColor = Color.Transparent };
+        hero.Controls.Add(tagline);
+        _playButton.Text = "▶    PLAY NOW";
+        _playButton.Location = new Point(42, 310);
+        _playButton.Size = new Size(430, 78);
+        _playButton.Font = new Font("Segoe UI Black", 20F, FontStyle.Bold | FontStyle.Italic);
+        StyleButton(_playButton, Color.FromArgb(0, 75, 220));
         _playButton.Enabled = false;
         _playButton.Click += (_, _) => LaunchLocalGame();
-        hero.Controls.AddRange(new Control[] { eyebrow, heading, sub, _playButton });
-        content.Controls.Add(hero);
+        hero.Controls.Add(_playButton);
 
-        var install = MakeCard(new Point(28, 290), new Size(1060, 120), Color.FromArgb(22, 29, 47), Color.FromArgb(15, 21, 36));
-        install.Controls.Add(new Label { Text = "GAME INSTALLATION", AutoSize = true, Location = new Point(20, 14), ForeColor = Color.FromArgb(130, 164, 230), Font = new Font("Segoe UI", 8.5F, FontStyle.Bold), BackColor = Color.Transparent });
-        _gamePath.Text = "Searching this computer for NBA2K23.exe…";
-        _gamePath.Location = new Point(20, 43); _gamePath.Size = new Size(850, 25);
-        _gamePath.ForeColor = Color.White; _gamePath.AutoEllipsis = true; _gamePath.BackColor = Color.Transparent;
-        _scanStatus.Text = "Initial scan starting";
-        _scanStatus.Location = new Point(20, 76); _scanStatus.AutoSize = true; _scanStatus.ForeColor = Color.FromArgb(156, 170, 196); _scanStatus.BackColor = Color.Transparent;
-        install.Controls.Add(_gamePath); install.Controls.Add(_scanStatus);
-        _scanButton.Text = "SCAN AGAIN";
-        StyleButton(_scanButton, new Point(900, 68), new Size(135, 34), Color.FromArgb(43, 58, 88));
-        _scanButton.Click += async (_, _) => await ScanComputerAsync();
-        install.Controls.Add(_scanButton);
-        content.Controls.Add(install);
-
-        var server = MakeCard(new Point(28, 430), new Size(1060, 150), Color.FromArgb(22, 29, 47), Color.FromArgb(15, 21, 36));
-        server.Controls.Add(new Label { Text = "COMMUNITY SERVICE STATUS  ·  OPTIONAL", AutoSize = true, Location = new Point(20, 15), ForeColor = Color.FromArgb(130, 164, 230), Font = new Font("Segoe UI", 8.5F, FontStyle.Bold), BackColor = Color.Transparent });
-        _serverUrl.Location = new Point(20, 48); _serverUrl.Size = new Size(780, 32);
-        _serverUrl.BackColor = Color.FromArgb(10, 16, 29); _serverUrl.ForeColor = Color.White; _serverUrl.BorderStyle = BorderStyle.FixedSingle;
-        server.Controls.Add(_serverUrl);
-        var check = new Button { Text = "CHECK", Location = new Point(690, 46), Size = new Size(100, 32) };
-        StyleButton(check, check.Location, check.Size, Color.FromArgb(43, 58, 88));
-        check.Click += async (_, _) => { SaveSettings(); await RefreshServerAsync(); };
-        server.Controls.Add(check);
-        _serverStatus.Text = "Not checked";
-        _serverStatus.Location = new Point(20, 94); _serverStatus.AutoSize = true; _serverStatus.ForeColor = Color.FromArgb(170, 185, 210); _serverStatus.BackColor = Color.Transparent;
-        server.Controls.Add(_serverStatus);
-        content.Controls.Add(server);
-
-        var foot = new Label
-        {
-            Text = "QUBE LAUNCHER  •  LOCAL FILES ONLY  •  No game files are downloaded or modified. If this installation requires Steam or another ownership check, this launcher will not bypass it. NBA 2K23 official online services have been retired; this optional check does not restore official multiplayer.",
-            Location = new Point(30, 600), Size = new Size(1030, 48), ForeColor = Color.FromArgb(116, 131, 158), Font = new Font("Segoe UI", 8F), BackColor = Color.Transparent
-        };
-        content.Controls.Add(foot);
+        var cards = new TableLayoutPanel { Dock = DockStyle.Bottom, Height = 172, ColumnCount = 3, RowCount = 1, BackColor = Color.Transparent, Padding = new Padding(0, 8, 0, 0) };
+        cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 34F));
+        cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
+        cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
+        body.Controls.Add(cards);
+        cards.Controls.Add(BuildInstallCard(), 0, 0);
+        cards.Controls.Add(BuildServerCard(), 1, 0);
+        cards.Controls.Add(BuildRewardsCard(), 2, 0);
+        body.Controls.SetChildIndex(cards, 0);
     }
 
-    private static void DrawHeroArtwork(Graphics g, Rectangle bounds)
+    private static void DrawArenaBackdrop(Graphics g, Rectangle r)
+    {
+        using var b = new LinearGradientBrush(r, Color.FromArgb(13, 24, 49), Color.FromArgb(4, 7, 15), 90f);
+        g.FillRectangle(b, r);
+        using var p = new Pen(Color.FromArgb(15, 105, 150, 255), 1);
+        for (int x = 0; x < r.Width; x += 52) g.DrawLine(p, x, 0, x, r.Height);
+        using var glow = new SolidBrush(Color.FromArgb(18, 20, 100, 255));
+        g.FillEllipse(glow, r.Width / 2 - 180, -190, 600, 420);
+    }
+
+    private static void DrawHero(Graphics g, Rectangle r)
     {
         g.SmoothingMode = SmoothingMode.AntiAlias;
-        using var glow = new LinearGradientBrush(bounds, Color.FromArgb(30, 62, 112), Color.FromArgb(8, 13, 27), 0f);
-        g.FillRectangle(glow, bounds);
-        using var beam = new Pen(Color.FromArgb(34, 112, 170, 255), 3);
-        for (int i = 0; i < 7; i++)
-            g.DrawLine(beam, bounds.Width - 360 + i * 42, 0, bounds.Width - 520 + i * 80, bounds.Height);
-        using var court = new Pen(Color.FromArgb(75, 126, 169, 220), 2);
-        g.DrawArc(court, bounds.Width - 390, 50, 300, 190, 185, 170);
-        g.DrawLine(court, bounds.Width - 360, bounds.Height - 24, bounds.Width - 35, bounds.Height - 24);
-        // Original stylized basketball artwork, not copied game or player imagery.
-        int bx = bounds.Width - 245, by = 42, d = 150;
-        using var ballBrush = new LinearGradientBrush(new Rectangle(bx, by, d, d),
-            Color.FromArgb(255, 173, 65), Color.FromArgb(170, 55, 20), 45f);
-        g.FillEllipse(ballBrush, bx, by, d, d);
-        using var ballPen = new Pen(Color.FromArgb(230, 35, 20, 16), 4);
-        g.DrawEllipse(ballPen, bx, by, d, d);
-        g.DrawArc(ballPen, bx + 34, by - 4, 82, d + 8, 90, 180);
-        g.DrawArc(ballPen, bx - 4, by + 34, d + 8, 82, 0, 180);
-        using var shine = new Pen(Color.FromArgb(65, 255, 255, 255), 7);
-        g.DrawArc(shine, bx + 12, by + 10, 55, 55, 205, 95);
-        using var shadow = new SolidBrush(Color.FromArgb(65, 0, 0, 0));
-        g.FillEllipse(shadow, bx - 20, by + d - 4, d + 40, 24);
+        using var bg = new LinearGradientBrush(r, Color.FromArgb(8, 15, 31), Color.FromArgb(16, 31, 61), 0f);
+        g.FillRectangle(bg, r);
+        using var dark = new LinearGradientBrush(r, Color.FromArgb(5, 8, 17), Color.FromArgb(5, 8, 17, 0), 0f);
+        g.FillRectangle(dark, r);
+        using var light = new Pen(Color.FromArgb(75, 110, 165, 255), 4);
+        for (int i = 0; i < 9; i++)
+        {
+            int x = r.Width - 470 + i * 48;
+            g.DrawLine(light, x, 0, x - 170, r.Height);
+        }
+        using var arena = new Pen(Color.FromArgb(75, 125, 165, 230), 2);
+        g.DrawArc(arena, r.Width - 560, 115, 500, 310, 190, 155);
+        g.DrawLine(arena, r.Width - 600, r.Height - 20, r.Width - 20, r.Height - 20);
+        using var floor = new LinearGradientBrush(new Rectangle(0, r.Height - 95, r.Width, 95), Color.FromArgb(0, 0, 0, 0), Color.FromArgb(170, 0, 5, 15), 90f);
+        g.FillRectangle(floor, 0, r.Height - 95, r.Width, 95);
+        DrawBasketball(g, r.Width - 360, 150, 178);
+        using var titleBrush = new SolidBrush(Color.FromArgb(238, 245, 250));
+        using var redBrush = new SolidBrush(Color.FromArgb(235, 30, 52));
+        using var titleFont = new Font("Segoe UI Black", 66F, FontStyle.Bold | FontStyle.Italic);
+        using var redFont = new Font("Segoe UI Black", 75F, FontStyle.Bold | FontStyle.Italic);
+        g.DrawString("QUBE", titleFont, titleBrush, 36, 54);
+        g.DrawString("2K23", redFont, redBrush, 36, 112);
     }
 
-    private static Panel MakeCard(Point location, Size size, Color top, Color bottom)
+    private static void DrawBasketball(Graphics g, int x, int y, int d)
     {
-        var panel = new Panel { Location = location, Size = size, BackColor = top, Padding = new Padding(0) };
-        panel.Paint += (_, e) =>
+        using var shadow = new SolidBrush(Color.FromArgb(95, 0, 0, 0));
+        g.FillEllipse(shadow, x - 18, y + d - 4, d + 36, 28);
+        using var ball = new LinearGradientBrush(new Rectangle(x, y, d, d), Color.FromArgb(255, 180, 70), Color.FromArgb(150, 42, 18), 45f);
+        g.FillEllipse(ball, x, y, d, d);
+        using var seam = new Pen(Color.FromArgb(235, 45, 22, 15), 5);
+        g.DrawEllipse(seam, x, y, d, d);
+        g.DrawArc(seam, x + d / 3, y - 3, d / 3, d + 6, 90, 180);
+        g.DrawArc(seam, x - 3, y + d / 3, d + 6, d / 3, 0, 180);
+        using var shine = new Pen(Color.FromArgb(80, 255, 255, 255), 9);
+        g.DrawArc(shine, x + 18, y + 12, 65, 65, 205, 95);
+    }
+
+    private Panel BuildInstallCard()
+    {
+        var p = MakeCard("GAME INSTALLATION", Color.FromArgb(10, 18, 35));
+        _installStatus.Text = "●  Searching for game files…";
+        _installStatus.Location = new Point(18, 42); _installStatus.Size = new Size(330, 26);
+        _installStatus.ForeColor = Color.FromArgb(255, 190, 70); _installStatus.BackColor = Color.Transparent;
+        _gamePath.Text = "Looking for NBA2K23.exe";
+        _gamePath.Location = new Point(18, 72); _gamePath.Size = new Size(340, 28);
+        _gamePath.ForeColor = Color.Gainsboro; _gamePath.AutoEllipsis = true; _gamePath.BackColor = Color.Transparent;
+        p.Controls.Add(_installStatus); p.Controls.Add(_gamePath);
+        _scanButton.Text = "CHANGE FOLDER / SCAN";
+        _scanButton.Location = new Point(18, 112); _scanButton.Size = new Size(230, 34);
+        StyleButton(_scanButton, Color.FromArgb(28, 39, 65));
+        _scanButton.Click += async (_, _) => { ChooseGameFolder(); if (_gameExe is null) await ScanComputerAsync(); };
+        p.Controls.Add(_scanButton);
+        return p;
+    }
+
+    private Panel BuildServerCard()
+    {
+        var p = MakeCard("ONLINE / COMMUNITY STATUS", Color.FromArgb(9, 20, 42));
+        _serverStatus.Text = "●  Not checked";
+        _serverStatus.Location = new Point(18, 43); _serverStatus.Size = new Size(320, 26);
+        _serverStatus.ForeColor = Color.FromArgb(170, 185, 210); _serverStatus.BackColor = Color.Transparent;
+        p.Controls.Add(_serverStatus);
+        _serverUrl.Location = new Point(18, 76); _serverUrl.Size = new Size(220, 28);
+        _serverUrl.BackColor = Color.FromArgb(7, 12, 24); _serverUrl.ForeColor = Color.White; _serverUrl.BorderStyle = BorderStyle.FixedSingle;
+        p.Controls.Add(_serverUrl);
+        var check = new Button { Text = "CHECK", Location = new Point(248, 75), Size = new Size(92, 30) };
+        StyleButton(check, Color.FromArgb(30, 50, 95));
+        check.Click += async (_, _) => { SaveSettings(); await RefreshServerAsync(); };
+        p.Controls.Add(check);
+        p.Controls.Add(MutedLabel("Community endpoint only; not official multiplayer.", 18, 115, 350));
+        return p;
+    }
+
+    private Panel BuildRewardsCard()
+    {
+        var p = MakeCard("QUBE COMMUNITY", Color.FromArgb(24, 10, 39));
+        var heading = new Label { Text = "BUILT FOR THE COMMUNITY", Location = new Point(18, 48), Size = new Size(350, 30), Font = new Font("Segoe UI Black", 15F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.White, BackColor = Color.Transparent };
+        var desc = MutedLabel("Play local installations. Stay connected with community updates.", 18, 82, 350);
+        var button = new Button { Text = "COMMUNITY INFO  ›", Location = new Point(18, 116), Size = new Size(220, 32) };
+        StyleButton(button, Color.FromArgb(60, 26, 105));
+        button.Click += (_, _) => MessageBox.Show("QUBE community features can be connected here when an official community endpoint is configured.", "QUBE Community", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        p.Controls.AddRange(new Control[] { heading, desc, button });
+        return p;
+    }
+
+    private static Panel MakeCard(string title, Color color)
+    {
+        var p = new Panel { Dock = DockStyle.Fill, Margin = new Padding(5), BackColor = color };
+        p.Paint += (_, e) =>
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            using var path = RoundedRect(new Rectangle(0, 0, panel.Width - 1, panel.Height - 1), 18);
-            using var brush = new LinearGradientBrush(panel.ClientRectangle, top, bottom, 90f);
-            e.Graphics.FillPath(brush, path);
-            using var pen = new Pen(Color.FromArgb(48, 86, 120, 180), 1);
+            using var path = RoundedRect(new Rectangle(0, 0, p.Width - 1, p.Height - 1), 14);
+            using var b = new LinearGradientBrush(p.ClientRectangle, color, Color.FromArgb(7, 11, 23), 90f);
+            e.Graphics.FillPath(b, path);
+            using var pen = new Pen(Color.FromArgb(100, 75, 115, 190), 1);
             e.Graphics.DrawPath(pen, path);
         };
-        return panel;
+        p.Controls.Add(new Label { Text = title, Location = new Point(18, 14), Size = new Size(360, 22), Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = Color.FromArgb(205, 220, 245), BackColor = Color.Transparent });
+        return p;
     }
 
-    private static GraphicsPath RoundedRect(Rectangle bounds, int radius)
+    private static GraphicsPath RoundedRect(Rectangle b, int radius)
     {
         int d = radius * 2;
-        var path = new GraphicsPath();
-        path.AddArc(bounds.X, bounds.Y, d, d, 180, 90);
-        path.AddArc(bounds.Right - d, bounds.Y, d, d, 270, 90);
-        path.AddArc(bounds.Right - d, bounds.Bottom - d, d, d, 0, 90);
-        path.AddArc(bounds.X, bounds.Bottom - d, d, d, 90, 90);
-        path.CloseFigure();
-        return path;
+        var p = new GraphicsPath();
+        p.AddArc(b.X, b.Y, d, d, 180, 90); p.AddArc(b.Right - d, b.Y, d, d, 270, 90);
+        p.AddArc(b.Right - d, b.Bottom - d, d, d, 0, 90); p.AddArc(b.X, b.Bottom - d, d, d, 90, 90);
+        p.CloseFigure(); return p;
     }
 
-    private static void StyleButton(Button button, Point location, Size size, Color color)
+    private static void StyleButton(Button b, Color color)
     {
-        button.Location = location; button.Size = size;
-        button.FlatStyle = FlatStyle.Flat; button.FlatAppearance.BorderSize = 0;
-        button.BackColor = color; button.ForeColor = Color.White;
-        button.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-        button.Cursor = Cursors.Hand;
+        b.FlatStyle = FlatStyle.Flat; b.FlatAppearance.BorderSize = 1;
+        b.FlatAppearance.BorderColor = Color.FromArgb(80, 100, 175, 255);
+        b.BackColor = color; b.ForeColor = Color.White;
+        b.Font = new Font("Segoe UI", 9F, FontStyle.Bold); b.Cursor = Cursors.Hand;
+    }
+
+    private static Label MutedLabel(string text, int x, int y, int w) =>
+        new() { Text = text, Location = new Point(x, y), Size = new Size(w, 24), ForeColor = Color.FromArgb(155, 170, 195), Font = new Font("Segoe UI", 8F), BackColor = Color.Transparent };
+
+    private static Label FooterLabel(string text, int x, Color color) =>
+        new() { Text = text, Location = new Point(x, 18), AutoSize = true, ForeColor = color, Font = new Font("Segoe UI", 9F, FontStyle.Bold), BackColor = Color.Transparent };
+
+    private static void AddTopTab(Panel p, string text, int x, bool selected)
+    {
+        var l = new Label { Text = text, Location = new Point(x, 0), Size = new Size(125, 80), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = selected ? Color.White : Color.FromArgb(175, 185, 205), BackColor = selected ? Color.FromArgb(25, 45, 85) : Color.Transparent, Cursor = Cursors.Hand };
+        l.Click += (_, _) => { if (text == "PLAY") MessageBox.Show("Select PLAY NOW after a supported local game installation is detected.", "Play", MessageBoxButtons.OK, MessageBoxIcon.Information); };
+        p.Controls.Add(l);
+    }
+
+    private static void AddSideItem(Panel p, string text, int y, bool selected)
+    {
+        var l = new Label { Text = text, Location = new Point(0, y), Size = new Size(175, 48), TextAlign = ContentAlignment.MiddleLeft, Padding = new Padding(24, 0, 0, 0), Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = selected ? Color.White : Color.FromArgb(170, 180, 200), BackColor = selected ? Color.FromArgb(20, 45, 95) : Color.Transparent, Cursor = Cursors.Hand };
+        p.Controls.Add(l);
     }
 
     private async Task ScanComputerAsync()
     {
         if (_scanning) return;
         _scanning = true; _scanButton.Enabled = false; _playButton.Enabled = false;
-        _scanStatus.Text = "Scanning common install folders and local drives…";
-        _gamePath.Text = "Looking for NBA2K23.exe";
+        _installStatus.Text = "●  Scanning local drives…";
+        _installStatus.ForeColor = Color.FromArgb(255, 190, 70);
         try
         {
             var found = await Task.Run(FindGameExecutable);
             _gameExe = found;
             if (found is not null)
             {
-                _gamePath.Text = found;
-                _scanStatus.Text = "Game executable found. Ready to launch.";
-                _playButton.Enabled = true;
-                SaveSettings();
+                _gamePath.Text = found; _installStatus.Text = "●  GAME FOUND";
+                _installStatus.ForeColor = Color.Lime; _playButton.Enabled = true; SaveSettings();
             }
             else
             {
                 _gamePath.Text = "No NBA2K23.exe found on accessible drives.";
-                _scanStatus.Text = "Use a manual folder selection only if you know where the game is installed.";
-                var choose = MessageBox.Show("No game executable was found. Would you like to select the game folder manually?",
-                    "Game not found", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
-                if (choose == DialogResult.Yes) ChooseGameFolder();
+                _installStatus.Text = "●  GAME NOT FOUND"; _installStatus.ForeColor = Color.OrangeRed;
             }
         }
-        catch (Exception ex) { _scanStatus.Text = "Scan error: " + ex.Message; }
+        catch (Exception ex) { _installStatus.Text = "●  Scan error"; _gamePath.Text = ex.Message; }
         finally { _scanning = false; _scanButton.Enabled = true; }
     }
 
     private static string? FindGameExecutable()
     {
-        var candidates = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        string[] roots = {
-            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Games"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Games"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads")
-        };
-        foreach (var root in roots.Where(Directory.Exists)) candidates.Add(root);
-        foreach (var drive in DriveInfo.GetDrives().Where(d => d.IsReady && (d.DriveType == DriveType.Fixed || d.DriveType == DriveType.Removable)))
-            candidates.Add(drive.RootDirectory.FullName);
-
-        var skip = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
-            "Windows", "$Recycle.Bin", "System Volume Information", "ProgramData", "WindowsApps",
-            "Microsoft", "Packages", "node_modules", ".git"
-        };
-        foreach (var root in candidates)
-        {
-            var hit = SearchDirectory(root, 0, 5, skip);
-            if (hit is not null) return hit;
-        }
+        var roots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var p in new[] { Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Games"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads") })
+            if (Directory.Exists(p)) roots.Add(p);
+        foreach (var d in DriveInfo.GetDrives().Where(d => d.IsReady && (d.DriveType == DriveType.Fixed || d.DriveType == DriveType.Removable))) roots.Add(d.RootDirectory.FullName);
+        var skip = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Windows", "$Recycle.Bin", "System Volume Information", "WindowsApps", "ProgramData", "node_modules", ".git" };
+        foreach (var root in roots) { var hit = SearchDirectory(root, 0, 5, skip); if (hit is not null) return hit; }
         return null;
     }
 
-    private static string? SearchDirectory(string directory, int depth, int maxDepth, HashSet<string> skip)
+    private static string? SearchDirectory(string dir, int depth, int maxDepth, HashSet<string> skip)
     {
         try
         {
-            var direct = Path.Combine(directory, "NBA2K23.exe");
-            if (File.Exists(direct)) return direct;
+            var exe = Path.Combine(dir, "NBA2K23.exe");
+            if (File.Exists(exe)) return exe;
             if (depth >= maxDepth) return null;
-            foreach (var child in Directory.EnumerateDirectories(directory))
+            foreach (var child in Directory.EnumerateDirectories(dir))
             {
                 var name = Path.GetFileName(child);
                 if (skip.Contains(name) || name.StartsWith('.') || name.Equals("Temp", StringComparison.OrdinalIgnoreCase)) continue;
-                var result = SearchDirectory(child, depth + 1, maxDepth, skip);
-                if (result is not null) return result;
+                var found = SearchDirectory(child, depth + 1, maxDepth, skip);
+                if (found is not null) return found;
             }
         }
-        catch (UnauthorizedAccessException) { }
-        catch (IOException) { }
-        catch (System.Security.SecurityException) { }
+        catch (UnauthorizedAccessException) { } catch (IOException) { } catch (System.Security.SecurityException) { }
         return null;
     }
 
     private void ChooseGameFolder()
     {
-        using var dialog = new FolderBrowserDialog { Description = "Select the folder containing NBA2K23.exe", UseDescriptionForTitle = true };
-        if (dialog.ShowDialog(this) != DialogResult.OK) return;
-        var exe = Path.Combine(dialog.SelectedPath, "NBA2K23.exe");
-        if (!File.Exists(exe))
-        {
-            MessageBox.Show("That folder does not contain NBA2K23.exe.", "Game not found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            return;
-        }
-        _gameExe = exe; _gamePath.Text = exe; _scanStatus.Text = "Executable found. Ready to launch.";
-        _playButton.Enabled = true; SaveSettings();
+        using var d = new FolderBrowserDialog { Description = "Select the folder containing NBA2K23.exe", UseDescriptionForTitle = true };
+        if (d.ShowDialog(this) != DialogResult.OK) return;
+        var exe = Path.Combine(d.SelectedPath, "NBA2K23.exe");
+        if (!File.Exists(exe)) { MessageBox.Show("That folder does not contain NBA2K23.exe.", "Game not found", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+        _gameExe = exe; _gamePath.Text = exe; _installStatus.Text = "●  GAME FOUND"; _installStatus.ForeColor = Color.Lime; _playButton.Enabled = true; SaveSettings();
     }
 
     private void LaunchLocalGame()
     {
         if (string.IsNullOrWhiteSpace(_gameExe) || !File.Exists(_gameExe))
         {
-            _playButton.Enabled = false;
-            MessageBox.Show("The selected game executable is missing. Scan again to locate it.", "Game files missing", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            return;
+            _playButton.Enabled = false; MessageBox.Show("The selected executable is missing. Scan again to locate the game.", "Game files missing", MessageBoxButtons.OK, MessageBoxIcon.Warning); return;
         }
         try
         {
             Process.Start(new ProcessStartInfo { FileName = _gameExe, WorkingDirectory = Path.GetDirectoryName(_gameExe)!, UseShellExecute = true });
-            _scanStatus.Text = "Launch request sent to the local game executable.";
+            _installStatus.Text = "●  LAUNCH REQUEST SENT";
         }
         catch (Exception ex)
         {
-            MessageBox.Show("Windows could not start the game. If the installation requires Steam or another ownership check, use its supported launch method.\n\n" + ex.Message,
-                "Launch failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show("Windows could not start this executable. If the installation requires Steam or another ownership check, this launcher will not bypass it.\n\n" + ex.Message, "Launch failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
     private async Task RefreshServerAsync()
     {
-        if (!Uri.TryCreate(_serverUrl.Text.Trim(), UriKind.Absolute, out var uri) ||
-            (uri.Scheme != Uri.UriSchemeHttps && uri.Scheme != Uri.UriSchemeHttp))
-        { _serverStatus.Text = "Enter a valid HTTP(S) status URL."; return; }
+        if (!Uri.TryCreate(_serverUrl.Text.Trim(), UriKind.Absolute, out var uri) || (uri.Scheme != Uri.UriSchemeHttps && uri.Scheme != Uri.UriSchemeHttp))
+        { _serverStatus.Text = "●  Enter a valid HTTP(S) status URL."; return; }
         try
         {
             using var response = await Http.GetAsync(uri);
-            _serverStatus.Text = response.IsSuccessStatusCode ? "Community endpoint: ONLINE" : $"Community endpoint: HTTP {(int)response.StatusCode}";
+            _serverStatus.Text = response.IsSuccessStatusCode ? "●  COMMUNITY ENDPOINT ONLINE" : $"●  HTTP {(int)response.StatusCode}";
+            _serverStatus.ForeColor = response.IsSuccessStatusCode ? Color.Lime : Color.OrangeRed;
         }
-        catch { _serverStatus.Text = "Community endpoint: OFFLINE / unreachable"; }
+        catch { _serverStatus.Text = "●  COMMUNITY ENDPOINT OFFLINE"; _serverStatus.ForeColor = Color.OrangeRed; }
     }
 
     private void LoadSettings()
@@ -304,7 +374,7 @@ public sealed class MainForm : Form
             {
                 var saved = exe.GetString();
                 if (!string.IsNullOrWhiteSpace(saved) && File.Exists(saved))
-                { _gameExe = saved; _gamePath.Text = saved; _scanStatus.Text = "Saved installation found."; _playButton.Enabled = true; }
+                { _gameExe = saved; _gamePath.Text = saved; _installStatus.Text = "●  GAME FOUND"; _installStatus.ForeColor = Color.Lime; _playButton.Enabled = true; }
             }
         }
         catch { }
