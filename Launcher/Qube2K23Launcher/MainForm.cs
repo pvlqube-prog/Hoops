@@ -196,8 +196,8 @@ public sealed class MainForm : Form
         g.DrawLine(leg, 36, 218, 28, 286);
         g.DrawLine(leg, 84, 218, 96, 286);
         using var shoe = new SolidBrush(trim);
-        g.FillRoundedRectangle(shoe, 9, 278, 42, 15, 6);
-        g.FillRoundedRectangle(shoe, 78, 278, 42, 15, 6);
+        g.FillRectangle(shoe, 9, 278, 42, 15);
+        g.FillRectangle(shoe, 78, 278, 42, 15);
         g.Restore(state);
     }
 
