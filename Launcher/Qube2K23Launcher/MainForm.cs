@@ -142,17 +142,63 @@ public sealed class MainForm : Form
             g.DrawLine(light, x, 0, x - 170, r.Height);
         }
         using var arena = new Pen(Color.FromArgb(75, 125, 165, 230), 2);
-        g.DrawArc(arena, r.Width - 560, 115, 500, 310, 190, 155);
-        g.DrawLine(arena, r.Width - 600, r.Height - 20, r.Width - 20, r.Height - 20);
-        using var floor = new LinearGradientBrush(new Rectangle(0, r.Height - 95, r.Width, 95), Color.FromArgb(0, 0, 0, 0), Color.FromArgb(170, 0, 5, 15), 90f);
-        g.FillRectangle(floor, 0, r.Height - 95, r.Width, 95);
-        DrawBasketball(g, r.Width - 360, 150, 178);
+        g.DrawArc(arena, r.Width - 650, 100, 610, 360, 190, 155);
+        g.DrawLine(arena, r.Width - 680, r.Height - 20, r.Width - 20, r.Height - 20);
+        using var floor = new LinearGradientBrush(new Rectangle(0, r.Height - 105, r.Width, 105), Color.FromArgb(0, 0, 0, 0), Color.FromArgb(190, 0, 5, 15), 90f);
+        g.FillRectangle(floor, 0, r.Height - 105, r.Width, 105);
+
+        // Original, vector-drawn QUBE athletes keep the artwork crisp at every window size.
+        DrawPlayer(g, r.Width - 570, 105, 0.88f, Color.FromArgb(22, 92, 205), Color.FromArgb(235, 240, 250));
+        DrawPlayer(g, r.Width - 390, 68, 1.08f, Color.FromArgb(190, 35, 55), Color.FromArgb(245, 235, 225));
+        DrawPlayer(g, r.Width - 205, 118, 0.82f, Color.FromArgb(35, 125, 105), Color.FromArgb(235, 240, 250));
+        DrawBasketball(g, r.Width - 335, r.Height - 180, 92);
+
+        using var eyebrowBrush = new SolidBrush(Color.FromArgb(80, 170, 245));
         using var titleBrush = new SolidBrush(Color.FromArgb(238, 245, 250));
         using var redBrush = new SolidBrush(Color.FromArgb(235, 30, 52));
+        using var eyebrowFont = new Font("Segoe UI", 12F, FontStyle.Bold);
         using var titleFont = new Font("Segoe UI Black", 66F, FontStyle.Bold | FontStyle.Italic);
         using var redFont = new Font("Segoe UI Black", 75F, FontStyle.Bold | FontStyle.Italic);
-        g.DrawString("QUBE", titleFont, titleBrush, 36, 54);
-        g.DrawString("2K23", redFont, redBrush, 36, 112);
+        g.DrawString("YOUR NEXT GAME STARTS HERE", eyebrowFont, eyebrowBrush, 40, 35);
+        g.DrawString("QUBE", titleFont, titleBrush, 36, 75);
+        g.DrawString("2K23", redFont, redBrush, 36, 135);
+    }
+
+    private static void DrawPlayer(Graphics g, int x, int y, float scale, Color jersey, Color trim)
+    {
+        var state = g.Save();
+        g.TranslateTransform(x, y);
+        g.ScaleTransform(scale, scale);
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        using var skin = new SolidBrush(Color.FromArgb(165, 105, 78));
+        using var shorts = new SolidBrush(Color.FromArgb(12, 19, 34));
+        using var jerseyBrush = new LinearGradientBrush(new Rectangle(12, 58, 100, 128), ControlPaint.Light(jersey), jersey, 0f);
+        using var outline = new Pen(Color.FromArgb(220, 8, 12, 22), 5);
+        using var accent = new Pen(trim, 5);
+        // Head and neck
+        g.FillEllipse(skin, 43, 8, 43, 48);
+        g.FillRectangle(skin, 54, 48, 22, 20);
+        // Arms
+        using var arm = new Pen(skin, 20) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+        g.DrawLine(arm, 25, 72, 3, 142);
+        g.DrawLine(arm, 98, 72, 126, 132);
+        // Jersey torso
+        Point[] torso = { new(30, 58), new(86, 58), new(111, 178), new(8, 178) };
+        g.FillPolygon(jerseyBrush, torso);
+        g.DrawPolygon(outline, torso);
+        g.DrawLine(accent, 31, 61, 85, 61);
+        g.DrawLine(accent, 31, 62, 22, 166);
+        g.DrawLine(accent, 85, 62, 96, 166);
+        // Shorts and legs
+        g.FillRectangle(shorts, 15, 174, 90, 48);
+        g.DrawLine(outline, 59, 178, 59, 220);
+        using var leg = new Pen(skin, 22) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+        g.DrawLine(leg, 36, 218, 28, 286);
+        g.DrawLine(leg, 84, 218, 96, 286);
+        using var shoe = new SolidBrush(trim);
+        g.FillRoundedRectangle(shoe, 9, 278, 42, 15, 6);
+        g.FillRoundedRectangle(shoe, 78, 278, 42, 15, 6);
+        g.Restore(state);
     }
 
     private static void DrawBasketball(Graphics g, int x, int y, int d)
