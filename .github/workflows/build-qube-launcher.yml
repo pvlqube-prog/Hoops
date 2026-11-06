@@ -23,10 +23,8 @@ jobs:
       - name: Build
         run: dotnet build Launcher/Qube2K23Launcher/Qube2K23Launcher.csproj --configuration Release
       - name: Publish single-file Windows executable
-        if: github.event_name != 'pull_request'
         run: dotnet publish Launcher/Qube2K23Launcher/Qube2K23Launcher.csproj --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
       - name: Upload launcher
-        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: QUBE-2K23-Launcher-win-x64
