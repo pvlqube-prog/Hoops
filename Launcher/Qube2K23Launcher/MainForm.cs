@@ -49,11 +49,11 @@ public sealed class MainForm : Form
         var logo = new Label { Text = "QUBE", Location = new Point(28, 8), Size = new Size(190, 42), Font = new Font("Segoe UI Black", 27F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.White, BackColor = Color.Transparent };
         var logoSub = new Label { Text = "2K23", Location = new Point(30, 47), Size = new Size(90, 25), Font = new Font("Segoe UI Black", 17F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.FromArgb(255, 45, 65), BackColor = Color.Transparent };
         top.Controls.AddRange(new Control[] { logo, logoSub });
-        AddTopTab(top, "HOME", 250, true);
-        AddTopTab(top, "PLAY", 390, false);
-        AddTopTab(top, "UPGRADES", 505, false);
-        AddTopTab(top, "SETTINGS", 675, false);
-        AddTopTab(top, "MORE ⌄", 850, false);
+        AddTopTab(top, "HOME", 250);
+        AddTopTab(top, "PLAY", 390);
+        AddTopTab(top, "UPGRADES", 505);
+        AddTopTab(top, "SETTINGS", 675);
+        AddTopTab(top, "MORE ⌄", 850);
         shell.Controls.Add(top);
 
         var side = new Panel { Dock = DockStyle.Left, Width = 176, BackColor = Color.FromArgb(7, 11, 22) };
@@ -62,12 +62,12 @@ public sealed class MainForm : Form
             using var p = new Pen(Color.FromArgb(35, 75, 125), 1);
             e.Graphics.DrawLine(p, side.Width - 1, 0, side.Width - 1, side.Height);
         };
-        AddSideItem(side, "⌂   Home", 82, true);
-        AddSideItem(side, "⚑   Play", 142, false);
-        AddSideItem(side, "▥   MyCAREER", 202, false);
-        AddSideItem(side, "🛒   Store", 262, false);
-        AddSideItem(side, "⚙   Settings", 322, false);
-        AddSideItem(side, "?   Support", 382, false);
+        AddSideItem(side, "⌂   Home", 82);
+        AddSideItem(side, "⚑   Play", 142);
+        AddSideItem(side, "▥   MyCAREER", 202);
+        AddSideItem(side, "🛒   Store", 262);
+        AddSideItem(side, "⚙   Settings", 322);
+        AddSideItem(side, "?   Support", 382);
         shell.Controls.Add(side);
 
         var footer = new Panel { Dock = DockStyle.Bottom, Height = 58, BackColor = Color.FromArgb(5, 8, 16) };
@@ -341,17 +341,133 @@ public sealed class MainForm : Form
     private static Label FooterLabel(string text, int x, Color color) =>
         new() { Text = text, Location = new Point(x, 18), AutoSize = true, ForeColor = color, Font = new Font("Segoe UI", 9F, FontStyle.Bold), BackColor = Color.Transparent };
 
-    private static void AddTopTab(Panel p, string text, int x, bool selected)
+    private void AddTopTab(Panel p, string text, int x)
     {
-        var l = new Label { Text = text, Location = new Point(x, 0), Size = new Size(125, 80), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = selected ? Color.White : Color.FromArgb(175, 185, 205), BackColor = selected ? Color.FromArgb(25, 45, 85) : Color.Transparent, Cursor = Cursors.Hand };
-        l.Click += (_, _) => { if (text == "PLAY") MessageBox.Show("Select PLAY NOW after a supported local game installation is detected.", "Play", MessageBoxButtons.OK, MessageBoxIcon.Information); };
+        var l = new Label { Text = text, Location = new Point(x, 0), Size = new Size(125, 80), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = Color.FromArgb(190, 205, 225), BackColor = Color.Transparent, Cursor = Cursors.Hand };
+        l.Click += (_, _) => Navigate(text.Replace(" ⌄", ""));
+        l.MouseEnter += (_, _) => l.ForeColor = Color.White;
+        l.MouseLeave += (_, _) => l.ForeColor = Color.FromArgb(190, 205, 225);
         p.Controls.Add(l);
     }
 
-    private static void AddSideItem(Panel p, string text, int y, bool selected)
+    private void AddSideItem(Panel p, string text, int y)
     {
-        var l = new Label { Text = text, Location = new Point(0, y), Size = new Size(175, 48), TextAlign = ContentAlignment.MiddleLeft, Padding = new Padding(24, 0, 0, 0), Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = selected ? Color.White : Color.FromArgb(170, 180, 200), BackColor = selected ? Color.FromArgb(20, 45, 95) : Color.Transparent, Cursor = Cursors.Hand };
+        var l = new Label { Text = text, Location = new Point(0, y), Size = new Size(175, 48), TextAlign = ContentAlignment.MiddleLeft, Padding = new Padding(24, 0, 0, 0), Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = Color.FromArgb(170, 185, 205), BackColor = Color.Transparent, Cursor = Cursors.Hand };
+        l.Click += (_, _) => Navigate(text.Substring(text.IndexOf(' ') + 1).Trim());
+        l.MouseEnter += (_, _) => { l.BackColor = Color.FromArgb(22, 42, 78); l.ForeColor = Color.White; };
+        l.MouseLeave += (_, _) => { l.BackColor = Color.Transparent; l.ForeColor = Color.FromArgb(170, 185, 205); };
         p.Controls.Add(l);
+    }
+
+    private void Navigate(string destination)
+    {
+        switch (destination.ToUpperInvariant())
+        {
+            case "HOME":
+                _installStatus.Text = _gameExe is not null && File.Exists(_gameExe) ? "●  GAME FOUND" : "●  SELECT OR SCAN YOUR GAME";
+                break;
+            case "PLAY":
+                if (_gameExe is not null && File.Exists(_gameExe)) LaunchLocalGame();
+                else MessageBox.Show("Choose your game folder or run a scan before launching.", "Game not found", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                break;
+            case "SETTINGS":
+                ShowSettingsDialog();
+                break;
+            case "UPGRADES":
+                ShowFeatureNotice("Upgrades", "The upgrades service is not connected yet. No purchases, player upgrades, or account changes are available in this launcher.");
+                break;
+            case "MYCAREER":
+                ShowFeatureNotice("MyCAREER", "MyCAREER requires a supported game mode and connected game service. This launcher does not currently provide a MyCAREER backend.");
+                break;
+            case "STORE":
+                ShowFeatureNotice("QUBE Store", "The store is not connected to a verified catalog or payment service. No purchases are available here.");
+                break;
+            case "SUPPORT":
+                ShowSupportDialog();
+                break;
+            case "MORE":
+                var menu = new ContextMenuStrip();
+                menu.Items.Add("Open log folder", null, (_, _) => OpenLogsFolder());
+                menu.Items.Add("Support & diagnostics", null, (_, _) => ShowSupportDialog());
+                menu.Items.Add("About QUBE 2K23", null, (_, _) => MessageBox.Show("QUBE 2K23 Launcher\nCommunity launcher for supported local game installations.", "About", MessageBoxButtons.OK, MessageBoxIcon.Information));
+                menu.Show(Cursor.Position);
+                break;
+        }
+    }
+
+    private void ShowFeatureNotice(string title, string message)
+    {
+        MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Information);
+    }
+
+    private void ShowSettingsDialog()
+    {
+        using var dialog = new Form
+        {
+            Text = "QUBE 2K23 Settings",
+            Size = new Size(590, 310),
+            StartPosition = FormStartPosition.CenterParent,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            MaximizeBox = false,
+            MinimizeBox = false,
+            BackColor = Color.FromArgb(8, 13, 27),
+            ForeColor = Color.White,
+            Font = new Font("Segoe UI", 9F)
+        };
+        var endpointLabel = new Label { Text = "Community status URL (optional)", Location = new Point(22, 22), Size = new Size(500, 24), ForeColor = Color.White };
+        var endpoint = new TextBox { Text = _serverUrl.Text, Location = new Point(22, 52), Size = new Size(520, 30), BackColor = Color.FromArgb(17, 25, 43), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
+        var gameLabel = new Label { Text = "Selected game executable", Location = new Point(22, 105), Size = new Size(500, 22), ForeColor = Color.FromArgb(175, 190, 215) };
+        var gamePath = new Label { Text = _gameExe ?? "No game selected", Location = new Point(22, 130), Size = new Size(520, 38), AutoEllipsis = true, ForeColor = Color.White };
+        var browse = new Button { Text = "CHOOSE GAME FOLDER", Location = new Point(22, 180), Size = new Size(190, 34) };
+        StyleButton(browse, Color.FromArgb(28, 48, 85));
+        browse.Click += (_, _) =>
+        {
+            ChooseGameFolder();
+            gamePath.Text = _gameExe ?? "No game selected";
+        };
+        var save = new Button { Text = "SAVE SETTINGS", Location = new Point(352, 220), Size = new Size(190, 36), DialogResult = DialogResult.OK };
+        StyleButton(save, Color.FromArgb(0, 75, 190));
+        save.Click += (_, _) => { _serverUrl.Text = endpoint.Text.Trim(); SaveSettings(); };
+        var logs = new Button { Text = "OPEN LOGS", Location = new Point(22, 220), Size = new Size(130, 36) };
+        StyleButton(logs, Color.FromArgb(28, 39, 65));
+        logs.Click += (_, _) => OpenLogsFolder();
+        dialog.Controls.AddRange(new Control[] { endpointLabel, endpoint, gameLabel, gamePath, browse, save, logs });
+        dialog.AcceptButton = save;
+        dialog.ShowDialog(this);
+    }
+
+    private void ShowSupportDialog()
+    {
+        var logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "QUBE", "2K23Launcher", "Logs", "last-launch.txt");
+        var details = $"Game: {_gameExe ?? "Not selected"}{Environment.NewLine}Status URL: {(_serverUrl.Text.Length == 0 ? "Not configured" : _serverUrl.Text)}{Environment.NewLine}Launch log: {logPath}";
+        using var dialog = new Form
+        {
+            Text = "QUBE Support & Diagnostics",
+            Size = new Size(700, 300),
+            StartPosition = FormStartPosition.CenterParent,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            MaximizeBox = false,
+            MinimizeBox = false,
+            BackColor = Color.FromArgb(8, 13, 27),
+            ForeColor = Color.White
+        };
+        var info = new Label { Text = "Use these details when troubleshooting launcher or game startup issues.", Location = new Point(20, 18), Size = new Size(640, 28), ForeColor = Color.White };
+        var box = new TextBox { Text = details, Location = new Point(20, 55), Size = new Size(640, 105), Multiline = true, ReadOnly = true, BackColor = Color.FromArgb(17, 25, 43), ForeColor = Color.Gainsboro, BorderStyle = BorderStyle.FixedSingle };
+        var copy = new Button { Text = "COPY DIAGNOSTICS", Location = new Point(20, 190), Size = new Size(175, 36) };
+        StyleButton(copy, Color.FromArgb(28, 48, 85));
+        copy.Click += (_, _) => { Clipboard.SetText(details); MessageBox.Show("Diagnostic details copied.", "QUBE Support", MessageBoxButtons.OK, MessageBoxIcon.Information); };
+        var logs = new Button { Text = "OPEN LOG FOLDER", Location = new Point(210, 190), Size = new Size(175, 36) };
+        StyleButton(logs, Color.FromArgb(28, 48, 85));
+        logs.Click += (_, _) => OpenLogsFolder();
+        dialog.Controls.AddRange(new Control[] { info, box, copy, logs });
+        dialog.ShowDialog(this);
+    }
+
+    private void OpenLogsFolder()
+    {
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "QUBE", "2K23Launcher", "Logs");
+        Directory.CreateDirectory(path);
+        Process.Start(new ProcessStartInfo("explorer.exe", path) { UseShellExecute = true });
     }
 
     private async Task ScanComputerAsync()
