@@ -432,9 +432,12 @@ public sealed class MainForm : Form
             }
             else
             {
-                _installStatus.Text = "●  GAME RUNNING";
-                _installStatus.ForeColor = Color.Lime;
-                _ = MonitorGameExitAsync(process, logPath);
+                // The game remained alive through its startup window. Close QUBE only
+                // after this check; the game process continues independently.
+                await File.AppendAllTextAsync(logPath, $"Startup confirmed at {DateTimeOffset.Now:O}; closing launcher.{Environment.NewLine}");
+                process.Dispose();
+                Close();
+                return;
             }
         }
         catch (Exception ex)
@@ -451,7 +454,8 @@ public sealed class MainForm : Form
         }
         finally
         {
-            _playButton.Enabled = _gameExe is not null && File.Exists(_gameExe);
+            if (!IsDisposed && !Disposing)
+                _playButton.Enabled = _gameExe is not null && File.Exists(_gameExe);
         }
     }
 
