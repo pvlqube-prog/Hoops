@@ -422,8 +422,21 @@ public sealed class MainForm : Form
         StyleButton(browse, Color.FromArgb(28, 48, 85));
         browse.Click += (_, _) =>
         {
-            ChooseGameFolder();
-            gamePath.Text = _gameExe ?? "No game selected";
+            using var folder = new FolderBrowserDialog { Description = "Select the folder containing NBA2K23.exe", UseDescriptionForTitle = true };
+            if (folder.ShowDialog(dialog) != DialogResult.OK) return;
+            var exe = Path.Combine(folder.SelectedPath, "NBA2K23.exe");
+            if (!File.Exists(exe))
+            {
+                MessageBox.Show(dialog, "That folder does not contain NBA2K23.exe.", "Game not found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            _gameExe = exe;
+            gamePath.Text = exe;
+            _gamePath.Text = exe;
+            _installStatus.Text = "●  GAME FOUND";
+            _installStatus.ForeColor = Color.Lime;
+            _playButton.Enabled = true;
+            SaveSettings();
         };
         var save = new Button { Text = "SAVE SETTINGS", Location = new Point(352, 220), Size = new Size(190, 36), DialogResult = DialogResult.OK };
         StyleButton(save, Color.FromArgb(0, 75, 190));
