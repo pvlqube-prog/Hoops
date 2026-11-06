@@ -35,107 +35,110 @@ public sealed class MainForm : Form
 
     private void BuildInterface()
     {
-        // Compact, single-surface layout inspired by the approved purple launcher reference.
-        var shell = new Panel { Dock = DockStyle.Fill, BackColor = Color.FromArgb(17, 9, 31) };
+        var shell = new Panel { Dock = DockStyle.Fill, BackColor = Color.FromArgb(14, 8, 27) };
         Controls.Add(shell);
 
-        var top = new Panel { Dock = DockStyle.Top, Height = 66, BackColor = Color.FromArgb(55, 19, 105) };
+        var top = new Panel { Dock = DockStyle.Top, Height = 72, BackColor = Color.FromArgb(47, 17, 91) };
         top.Paint += (_, e) =>
         {
-            using var brush = new LinearGradientBrush(top.ClientRectangle, Color.FromArgb(88, 30, 164), Color.FromArgb(42, 15, 83), 0f);
+            using var brush = new LinearGradientBrush(top.ClientRectangle, Color.FromArgb(91, 35, 170), Color.FromArgb(35, 13, 70), 0f);
             e.Graphics.FillRectangle(brush, top.ClientRectangle);
-            using var line = new Pen(Color.FromArgb(95, 145, 75, 220));
+            using var line = new Pen(Color.FromArgb(105, 160, 100, 230));
             e.Graphics.DrawLine(line, 0, top.Height - 1, top.Width, top.Height - 1);
         };
-        var mark = new Label { Text = "Q", Location = new Point(22, 10), Size = new Size(42, 44), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI Black", 23F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.White, BackColor = Color.FromArgb(133, 54, 255) };
-        var wordmark = new Label { Text = "QUBE 2K23", Location = new Point(72, 13), Size = new Size(170, 38), Font = new Font("Segoe UI Black", 18F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.White, BackColor = Color.Transparent };
-        top.Controls.Add(mark); top.Controls.Add(wordmark);
-        AddTopTab(top, "PLAY", 250);
-        AddTopTab(top, "UPGRADES", 350);
-        AddTopTab(top, "MYCAREER", 470);
-        AddTopTab(top, "STORE", 605);
-        AddTopTab(top, "COMMUNITY", 700);
-        AddTopTab(top, "SETTINGS", 840);
-        AddTopTab(top, "SUPPORT", 960);
-        var online = new Label { Text = "●  LOCAL LAUNCHER", Location = new Point(1090, 0), Size = new Size(170, 66), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = Color.FromArgb(195, 255, 225), BackColor = Color.Transparent, Anchor = AnchorStyles.Top | AnchorStyles.Right };
+        var mark = new Label { Text = "Q", Location = new Point(22, 13), Size = new Size(42, 44), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI Black", 23F, FontStyle.Bold), ForeColor = Color.White, BackColor = Color.FromArgb(133, 54, 255) };
+        var wordmark = new Label { Text = "QUBE 2K23", Location = new Point(76, 16), Size = new Size(172, 38), Font = new Font("Segoe UI Black", 18F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.White, BackColor = Color.Transparent };
+        top.Controls.Add(mark);
+        top.Controls.Add(wordmark);
+        AddTopTab(top, "PLAY", 280);
+        AddTopTab(top, "UPGRADES", 365);
+        AddTopTab(top, "MYCAREER", 485);
+        AddTopTab(top, "STORE", 625);
+        AddTopTab(top, "COMMUNITY", 715);
+        AddTopTab(top, "SETTINGS", 860);
+        AddTopTab(top, "SUPPORT", 985);
+        var online = new Label { Text = "●  DESKTOP LAUNCHER", Location = new Point(1090, 0), Size = new Size(190, 72), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 8.5F, FontStyle.Bold), ForeColor = Color.FromArgb(205, 255, 225), BackColor = Color.Transparent, Anchor = AnchorStyles.Top | AnchorStyles.Right };
         top.Controls.Add(online);
         shell.Controls.Add(top);
 
-        var footer = new Panel { Dock = DockStyle.Bottom, Height = 34, BackColor = Color.FromArgb(13, 7, 24) };
+        var footer = new Panel { Dock = DockStyle.Bottom, Height = 34, BackColor = Color.FromArgb(10, 5, 20) };
         footer.Controls.Add(FooterLabel("QUBE 2K23  •  BUILT FOR THE COMMUNITY", 22, Color.FromArgb(165, 150, 190)));
         shell.Controls.Add(footer);
 
-        var body = new Panel { Dock = DockStyle.Fill, BackColor = Color.FromArgb(19, 10, 34), Padding = new Padding(28, 22, 28, 18) };
-        body.Paint += (_, e) =>
+        var body = new TableLayoutPanel
         {
-            using var bg = new LinearGradientBrush(body.ClientRectangle, Color.FromArgb(54, 22, 91), Color.FromArgb(13, 7, 24), 90F);
-            e.Graphics.FillRectangle(bg, body.ClientRectangle);
-            using var glow = new SolidBrush(Color.FromArgb(22, 165, 80, 255));
-            e.Graphics.FillEllipse(glow, body.Width / 2, -220, 700, 520);
+            Dock = DockStyle.Fill, BackColor = Color.FromArgb(17, 9, 31),
+            Padding = new Padding(26, 20, 26, 18), ColumnCount = 1, RowCount = 2
         };
+        body.RowStyles.Add(new RowStyle(SizeType.Percent, 76F));
+        body.RowStyles.Add(new RowStyle(SizeType.Percent, 24F));
         shell.Controls.Add(body);
 
-        var hero = new Panel { Dock = DockStyle.Top, Height = 470, BackColor = Color.FromArgb(25, 12, 43) };
-        hero.Paint += (_, e) =>
-        {
-            using var bg = new LinearGradientBrush(hero.ClientRectangle, Color.FromArgb(43, 18, 77), Color.FromArgb(13, 7, 24), 0F);
-            e.Graphics.FillRectangle(bg, hero.ClientRectangle);
-            DrawHero(e.Graphics, hero.ClientRectangle);
-            using var shade = new SolidBrush(Color.FromArgb(100, 15, 5, 27));
-            e.Graphics.FillRectangle(shade, 0, 0, hero.Width, hero.Height);
-        };
-        body.Controls.Add(hero);
+        var hero = new Panel { Dock = DockStyle.Fill, BackColor = Color.FromArgb(11, 13, 31), Margin = new Padding(0, 0, 0, 12) };
+        hero.Paint += (_, e) => DrawHero(e.Graphics, hero.ClientRectangle);
+        body.Controls.Add(hero, 0, 0);
 
-        var left = new Panel { Location = new Point(26, 26), Size = new Size(550, 420), BackColor = Color.Transparent };
+        var left = new Panel { Location = new Point(34, 30), Size = new Size(560, 390), BackColor = Color.Transparent, Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right };
         hero.Controls.Add(left);
-        var update = MakeCard("LAUNCHER STATUS", Color.FromArgb(66, 31, 105));
-        update.Location = new Point(0, 0); update.Size = new Size(550, 92); update.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-        update.Controls.Add(MutedLabel("QUBE 2K23 launcher is up to date. Select your game folder to get started.", 18, 43, 510));
-        left.Controls.Add(update);
 
-        var welcome = new Label { Text = "WELCOME TO QUBE", Location = new Point(0, 120), Size = new Size(500, 28), Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = Color.FromArgb(205, 160, 255), BackColor = Color.Transparent };
-        var title = new Label { Text = "QUBE 2K23", Location = new Point(0, 150), Size = new Size(550, 88), Font = new Font("Segoe UI Black", 54F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.White, BackColor = Color.Transparent };
-        var subtitle = new Label { Text = "PLAY. COMPETE. DOMINATE.", Location = new Point(4, 240), Size = new Size(520, 42), Font = new Font("Segoe UI", 19F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.White, BackColor = Color.Transparent };
-        var description = new Label { Text = "Your court is waiting. Choose a supported local game installation to begin.", Location = new Point(4, 288), Size = new Size(510, 48), Font = new Font("Segoe UI", 11F), ForeColor = Color.FromArgb(225, 215, 238), BackColor = Color.Transparent };
-        left.Controls.AddRange(new Control[] { welcome, title, subtitle, description });
+        var eyebrow = new Label { Text = "WELCOME TO THE NEXT GENERATION", Location = new Point(2, 26), Size = new Size(490, 26), Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = Color.FromArgb(203, 166, 255), BackColor = Color.Transparent };
+        var title = new Label { Text = "QUBE 2K23", Location = new Point(0, 70), Size = new Size(540, 76), Font = new Font("Segoe UI Black", 47F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.White, BackColor = Color.Transparent };
+        var subtitle = new Label { Text = "PLAY. COMPETE. DOMINATE.", Location = new Point(3, 157), Size = new Size(520, 38), Font = new Font("Segoe UI", 19F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.FromArgb(242, 232, 255), BackColor = Color.Transparent };
+        var description = new Label { Text = "Your court is waiting. Select a supported local game installation to get started.", Location = new Point(4, 211), Size = new Size(510, 52), Font = new Font("Segoe UI", 11F), ForeColor = Color.FromArgb(220, 211, 237), BackColor = Color.Transparent };
+        left.Controls.AddRange(new Control[] { eyebrow, title, subtitle, description });
 
         _playButton.Text = "▶   PLAY NOW";
-        _playButton.Location = new Point(0, 350); _playButton.Size = new Size(245, 58);
-        _playButton.Font = new Font("Segoe UI Black", 16F, FontStyle.Bold);
+        _playButton.Location = new Point(2, 292);
+        _playButton.Size = new Size(245, 58);
+        _playButton.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
         StyleButton(_playButton, Color.FromArgb(126, 39, 238));
         _playButton.Enabled = false;
         _playButton.Click += (_, _) => LaunchLocalGame();
         left.Controls.Add(_playButton);
 
-        var choose = new Button { Text = "GAME FOLDER", Location = new Point(258, 350), Size = new Size(190, 58) };
-        StyleButton(choose, Color.FromArgb(50, 31, 70));
+        var choose = new Button { Text = "GAME FOLDER", Location = new Point(262, 292), Size = new Size(190, 58), Font = new Font("Segoe UI", 10F, FontStyle.Bold) };
+        StyleButton(choose, Color.FromArgb(47, 30, 68));
         choose.Click += (_, _) => ChooseGameFolder();
         left.Controls.Add(choose);
 
-        var status = MakeCard("STATUS", Color.FromArgb(55, 30, 83));
-        status.Location = new Point(600, 24); status.Size = new Size(370, 370); status.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        status.Controls.Add(MutedLabel("What has to be set before you can play.", 20, 43, 330));
-        var gameTitle = new Label { Text = "Game installation", Location = new Point(20, 92), Size = new Size(220, 24), Font = new Font("Segoe UI", 11F, FontStyle.Bold), ForeColor = Color.White, BackColor = Color.Transparent };
-        _installStatus.Location = new Point(20, 119); _installStatus.Size = new Size(320, 25); _installStatus.ForeColor = Color.FromArgb(255, 190, 90); _installStatus.BackColor = Color.Transparent;
-        _gamePath.Location = new Point(20, 147); _gamePath.Size = new Size(325, 38); _gamePath.AutoEllipsis = true; _gamePath.ForeColor = Color.FromArgb(220, 210, 235); _gamePath.BackColor = Color.Transparent;
-        var serverTitle = new Label { Text = "Community endpoint", Location = new Point(20, 220), Size = new Size(240, 24), Font = new Font("Segoe UI", 11F, FontStyle.Bold), ForeColor = Color.White, BackColor = Color.Transparent };
-        _serverStatus.Location = new Point(20, 248); _serverStatus.Size = new Size(325, 28); _serverStatus.ForeColor = Color.FromArgb(180, 205, 190); _serverStatus.BackColor = Color.Transparent;
-        var check = new Button { Text = "CHECK STATUS", Location = new Point(20, 300), Size = new Size(150, 38) };
+        var status = MakeCard("GAME STATUS", Color.FromArgb(35, 20, 59));
+        status.Location = new Point(Math.Max(610, hero.ClientSize.Width - 405), 28);
+        status.Size = new Size(365, Math.Min(350, Math.Max(300, hero.ClientSize.Height - 56)));
+        status.Anchor = AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom;
+        hero.Controls.Add(status);
+        hero.Resize += (_, _) =>
+        {
+            status.Location = new Point(Math.Max(610, hero.ClientSize.Width - 405), 28);
+            status.Height = Math.Min(350, Math.Max(300, hero.ClientSize.Height - 56));
+            left.Height = Math.Max(330, hero.ClientSize.Height - 56);
+        };
+
+        status.Controls.Add(MutedLabel("Your local installation and community connection.", 20, 44, 320));
+        var gameTitle = new Label { Text = "GAME INSTALLATION", Location = new Point(20, 100), Size = new Size(300, 22), Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = Color.White, BackColor = Color.Transparent };
+        _installStatus.Location = new Point(20, 130); _installStatus.Size = new Size(320, 25); _installStatus.ForeColor = Color.FromArgb(255, 190, 90); _installStatus.BackColor = Color.Transparent;
+        _gamePath.Location = new Point(20, 160); _gamePath.Size = new Size(320, 42); _gamePath.AutoEllipsis = true; _gamePath.ForeColor = Color.FromArgb(220, 210, 235); _gamePath.BackColor = Color.Transparent;
+        var serverTitle = new Label { Text = "COMMUNITY STATUS", Location = new Point(20, 220), Size = new Size(300, 22), Font = new Font("Segoe UI", 10F, FontStyle.Bold), ForeColor = Color.White, BackColor = Color.Transparent };
+        _serverStatus.Location = new Point(20, 250); _serverStatus.Size = new Size(320, 28); _serverStatus.ForeColor = Color.FromArgb(180, 205, 190); _serverStatus.BackColor = Color.Transparent;
+        var check = new Button { Text = "CHECK STATUS", Location = new Point(20, 292), Size = new Size(150, 38) };
         StyleButton(check, Color.FromArgb(88, 45, 135));
         check.Click += async (_, _) => { SaveSettings(); await RefreshServerAsync(); };
         status.Controls.AddRange(new Control[] { gameTitle, _installStatus, _gamePath, serverTitle, _serverStatus, check });
-        hero.Controls.Add(status);
 
-        var cards = new TableLayoutPanel { Dock = DockStyle.Bottom, Height = 90, ColumnCount = 3, RowCount = 1, BackColor = Color.Transparent, Padding = new Padding(0, 10, 0, 0) };
+        var cards = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 3, RowCount = 1, BackColor = Color.Transparent, Margin = new Padding(0) };
         for (int i = 0; i < 3; i++) cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.333F));
-        body.Controls.Add(cards);
-        var installStrip = MakeCard("GAME FOLDER", Color.FromArgb(39, 25, 55));
-        installStrip.Controls.Add(MutedLabel("Choose or scan for your local installation", 16, 43, 330));
-        var playerStrip = MakeCard("PLAYER PROFILE", Color.FromArgb(39, 25, 55));
-        playerStrip.Controls.Add(MutedLabel("Local launcher profile", 16, 43, 330));
-        var communityStrip = MakeCard("COMMUNITY", Color.FromArgb(39, 25, 55));
-        communityStrip.Controls.Add(MutedLabel("Optional status endpoint only", 16, 43, 330));
-        cards.Controls.Add(installStrip, 0, 0); cards.Controls.Add(playerStrip, 1, 0); cards.Controls.Add(communityStrip, 2, 0);
+        body.Controls.Add(cards, 0, 1);
+        var installStrip = MakeCard("GAME FOLDER", Color.FromArgb(34, 22, 49));
+        installStrip.Margin = new Padding(0, 0, 10, 0);
+        installStrip.Controls.Add(MutedLabel("Select or scan your local installation", 16, 43, 330));
+        var playerStrip = MakeCard("PLAYER PROFILE", Color.FromArgb(34, 22, 49));
+        playerStrip.Margin = new Padding(5, 0, 5, 0);
+        playerStrip.Controls.Add(MutedLabel("Your local launcher profile", 16, 43, 330));
+        var communityStrip = MakeCard("COMMUNITY", Color.FromArgb(34, 22, 49));
+        communityStrip.Margin = new Padding(10, 0, 0, 0);
+        communityStrip.Controls.Add(MutedLabel("Optional status endpoint", 16, 43, 330));
+        cards.Controls.Add(installStrip, 0, 0);
+        cards.Controls.Add(playerStrip, 1, 0);
+        cards.Controls.Add(communityStrip, 2, 0);
     }
 
     private static void DrawArenaBackdrop(Graphics g, Rectangle r)
@@ -151,54 +154,22 @@ public sealed class MainForm : Form
     private static void DrawHero(Graphics g, Rectangle r)
     {
         g.SmoothingMode = SmoothingMode.AntiAlias;
-        using var bg = new LinearGradientBrush(r, Color.FromArgb(5, 10, 23), Color.FromArgb(17, 32, 62), 18f);
+        using var bg = new LinearGradientBrush(r, Color.FromArgb(9, 12, 30), Color.FromArgb(29, 12, 48), 15F);
         g.FillRectangle(bg, r);
 
-        // Arena atmosphere: overhead lights, haze, crowd band and a reflective court.
-        using (var haze = new SolidBrush(Color.FromArgb(34, 30, 105, 220)))
-            g.FillEllipse(haze, r.Width - 760, -250, 900, 650);
-        using (var glow = new SolidBrush(Color.FromArgb(18, 80, 135, 255)))
-            g.FillEllipse(glow, r.Width - 690, -140, 760, 520);
-        using var crowd = new LinearGradientBrush(new Rectangle(0, 260, r.Width, 115), Color.FromArgb(0, 15, 25, 45), Color.FromArgb(130, 2, 5, 13), 90f);
-        g.FillRectangle(crowd, 0, 260, r.Width, 115);
-        using var beams = new Pen(Color.FromArgb(24, 150, 190, 255), 3);
-        for (int i = 0; i < 8; i++)
-            g.DrawLine(beams, r.Width - 650 + i * 85, 0, r.Width - 820 + i * 135, 360);
-
-        // Court markings and bright center-court reflection.
-        using var court = new Pen(Color.FromArgb(65, 110, 155, 225), 2);
-        g.DrawArc(court, r.Width - 710, 155, 650, 410, 195, 150);
-        g.DrawLine(court, r.Width - 680, r.Height - 25, r.Width - 30, r.Height - 25);
-        using var courtGlow = new LinearGradientBrush(new Rectangle(0, r.Height - 125, r.Width, 125), Color.FromArgb(0, 15, 35, 70), Color.FromArgb(190, 2, 5, 13), 90f);
-        g.FillRectangle(courtGlow, 0, r.Height - 125, r.Width, 125);
-
-        // Original QUBE athletes, lit like a cinematic game-cover scene.
-        DrawPlayer(g, r.Width - 585, 104, 1.02f, Color.FromArgb(22, 92, 205), Color.FromArgb(125, 190, 255));
-        DrawPlayer(g, r.Width - 390, 53, 1.22f, Color.FromArgb(190, 30, 52), Color.FromArgb(255, 185, 105));
-        DrawPlayer(g, r.Width - 175, 115, 0.94f, Color.FromArgb(25, 125, 105), Color.FromArgb(120, 255, 210));
-        DrawBasketball(g, r.Width - 355, r.Height - 170, 82);
-
-        // Left-side title treatment with a red accent rail and layered typography.
-        using var rail = new LinearGradientBrush(new Rectangle(36, 40, 5, 205), Color.FromArgb(70, 140, 255), Color.FromArgb(245, 35, 58), 90f);
-        g.FillRectangle(rail, 36, 40, 5, 205);
-        using var eyebrowFont = new Font("Segoe UI", 10F, FontStyle.Bold);
-        using var titleFont = new Font("Segoe UI Black", 64F, FontStyle.Bold | FontStyle.Italic);
-        using var subFont = new Font("Segoe UI Black", 70F, FontStyle.Bold | FontStyle.Italic);
-        using var eyebrowBrush = new SolidBrush(Color.FromArgb(115, 190, 255));
-        using var titleBrush = new SolidBrush(Color.FromArgb(248, 250, 255));
-        using var redBrush = new SolidBrush(Color.FromArgb(245, 42, 62));
-        using var shadow = new SolidBrush(Color.FromArgb(150, 0, 0, 0));
-        g.DrawString("THE NEXT GENERATION OF STREETBALL", eyebrowFont, eyebrowBrush, 54, 44);
-        g.DrawString("QUBE", titleFont, shadow, 56, 91);
-        g.DrawString("QUBE", titleFont, titleBrush, 51, 86);
-        g.DrawString("2K23", subFont, shadow, 56, 151);
-        g.DrawString("2K23", subFont, redBrush, 51, 146);
-
-        using var tagFont = new Font("Segoe UI", 10F, FontStyle.Bold);
-        using var tagBrush = new SolidBrush(Color.FromArgb(205, 220, 242));
-        using var tagBg = new SolidBrush(Color.FromArgb(95, 20, 42, 78));
-        g.FillRectangle(tagBg, 53, 238, 290, 29);
-        g.DrawString("PLAY  •  COMPETE  •  OWN THE COURT", tagFont, tagBrush, 64, 244);
+        // Subtle arena lighting and court geometry; all branding remains live UI text.
+        using var haze = new SolidBrush(Color.FromArgb(28, 112, 56, 205));
+        g.FillEllipse(haze, r.Width - 760, -260, 950, 680);
+        using var beams = new Pen(Color.FromArgb(22, 175, 125, 255), 2);
+        for (int i = 0; i < 7; i++)
+            g.DrawLine(beams, r.Width - 650 + i * 100, 0, r.Width - 900 + i * 145, r.Height);
+        using var crowd = new LinearGradientBrush(new Rectangle(0, Math.Max(0, r.Height - 190), r.Width, 190), Color.FromArgb(0, 8, 9, 24), Color.FromArgb(150, 4, 5, 15), 90F);
+        g.FillRectangle(crowd, 0, Math.Max(0, r.Height - 190), r.Width, 190);
+        using var court = new Pen(Color.FromArgb(48, 174, 130, 235), 2);
+        g.DrawArc(court, r.Width - 700, r.Height - 330, 620, 430, 190, 160);
+        g.DrawLine(court, r.Width - 720, r.Height - 24, r.Width - 35, r.Height - 24);
+        using var edge = new Pen(Color.FromArgb(90, 151, 75, 222), 1);
+        g.DrawLine(edge, 0, r.Height - 1, r.Width, r.Height - 1);
     }
 
     private static void DrawPlayer(Graphics g, int x, int y, float scale, Color jersey, Color trim)
