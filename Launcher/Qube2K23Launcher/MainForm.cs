@@ -76,11 +76,9 @@ public sealed class MainForm : Form
             using var p = new Pen(Color.FromArgb(40, 65, 105));
             e.Graphics.DrawLine(p, 0, 0, footer.Width, 0);
         };
-        footer.Controls.Add(FooterLabel("◉  CPU —", 28, Color.Gainsboro));
-        footer.Controls.Add(FooterLabel("▣  GPU —", 145, Color.FromArgb(40, 255, 110)));
-        footer.Controls.Add(FooterLabel("▥  FPS —", 270, Color.FromArgb(40, 255, 110)));
-        footer.Controls.Add(FooterLabel("NEW", 405, Color.FromArgb(255, 55, 65)));
-        footer.Controls.Add(FooterLabel("Welcome to QUBE 2K23!  Your court is waiting.", 465, Color.Gainsboro));
+        footer.Controls.Add(FooterLabel("●  QUBE 2K23", 28, Color.FromArgb(105, 180, 255)));
+        footer.Controls.Add(FooterLabel("GAME LAUNCHER", 190, Color.FromArgb(155, 170, 195)));
+        footer.Controls.Add(FooterLabel("Welcome to QUBE 2K23. Your court is waiting.", 365, Color.Gainsboro));
         var slogan = FooterLabel("BUILT FOR THE COMMUNITY", 0, Color.FromArgb(160, 170, 195));
         slogan.Anchor = AnchorStyles.Right | AnchorStyles.Top;
         slogan.Location = new Point(Math.Max(footer.Width - 250, 700), 19);
@@ -131,37 +129,60 @@ public sealed class MainForm : Form
     private static void DrawHero(Graphics g, Rectangle r)
     {
         g.SmoothingMode = SmoothingMode.AntiAlias;
-        using var bg = new LinearGradientBrush(r, Color.FromArgb(8, 15, 31), Color.FromArgb(16, 31, 61), 0f);
+        using var bg = new LinearGradientBrush(r, Color.FromArgb(5, 10, 23), Color.FromArgb(17, 32, 62), 18f);
         g.FillRectangle(bg, r);
-        using var dark = new LinearGradientBrush(r, Color.FromArgb(5, 8, 17), Color.FromArgb(5, 8, 17, 0), 0f);
-        g.FillRectangle(dark, r);
-        using var light = new Pen(Color.FromArgb(75, 110, 165, 255), 4);
-        for (int i = 0; i < 9; i++)
+
+        // Arena atmosphere: overhead lights, haze, crowd band and a reflective court.
+        using (var haze = new SolidBrush(Color.FromArgb(34, 30, 105, 220)))
+            g.FillEllipse(haze, r.Width - 760, -250, 900, 650);
+        using (var glow = new PathGradientBrush(new[] {
+            new Point(r.Width - 410, 12), new Point(r.Width - 50, 12),
+            new Point(r.Width - 5, 270), new Point(r.Width - 660, 270) }))
         {
-            int x = r.Width - 470 + i * 48;
-            g.DrawLine(light, x, 0, x - 170, r.Height);
+            glow.CenterColor = Color.FromArgb(48, 90, 150, 255);
+            glow.SurroundColors = new[] { Color.FromArgb(0, 10, 25, 55), Color.FromArgb(0, 10, 25, 55), Color.FromArgb(0, 10, 25, 55), Color.FromArgb(0, 10, 25, 55) };
+            g.FillRectangle(new SolidBrush(Color.FromArgb(12, 100, 150, 255)), r.Width - 690, 0, 690, 370);
         }
-        using var arena = new Pen(Color.FromArgb(75, 125, 165, 230), 2);
-        g.DrawArc(arena, r.Width - 650, 100, 610, 360, 190, 155);
-        g.DrawLine(arena, r.Width - 680, r.Height - 20, r.Width - 20, r.Height - 20);
-        using var floor = new LinearGradientBrush(new Rectangle(0, r.Height - 105, r.Width, 105), Color.FromArgb(0, 0, 0, 0), Color.FromArgb(190, 0, 5, 15), 90f);
-        g.FillRectangle(floor, 0, r.Height - 105, r.Width, 105);
+        using var crowd = new LinearGradientBrush(new Rectangle(0, 260, r.Width, 115), Color.FromArgb(0, 15, 25, 45), Color.FromArgb(130, 2, 5, 13), 90f);
+        g.FillRectangle(crowd, 0, 260, r.Width, 115);
+        using var beams = new Pen(Color.FromArgb(24, 150, 190, 255), 3);
+        for (int i = 0; i < 8; i++)
+            g.DrawLine(beams, r.Width - 650 + i * 85, 0, r.Width - 820 + i * 135, 360);
 
-        // Original, vector-drawn QUBE athletes keep the artwork crisp at every window size.
-        DrawPlayer(g, r.Width - 570, 105, 0.88f, Color.FromArgb(22, 92, 205), Color.FromArgb(235, 240, 250));
-        DrawPlayer(g, r.Width - 390, 68, 1.08f, Color.FromArgb(190, 35, 55), Color.FromArgb(245, 235, 225));
-        DrawPlayer(g, r.Width - 205, 118, 0.82f, Color.FromArgb(35, 125, 105), Color.FromArgb(235, 240, 250));
-        DrawBasketball(g, r.Width - 335, r.Height - 180, 92);
+        // Court markings and bright center-court reflection.
+        using var court = new Pen(Color.FromArgb(65, 110, 155, 225), 2);
+        g.DrawArc(court, r.Width - 710, 155, 650, 410, 195, 150);
+        g.DrawLine(court, r.Width - 680, r.Height - 25, r.Width - 30, r.Height - 25);
+        using var courtGlow = new LinearGradientBrush(new Rectangle(0, r.Height - 125, r.Width, 125), Color.FromArgb(0, 15, 35, 70), Color.FromArgb(190, 2, 5, 13), 90f);
+        g.FillRectangle(courtGlow, 0, r.Height - 125, r.Width, 125);
 
-        using var eyebrowBrush = new SolidBrush(Color.FromArgb(80, 170, 245));
-        using var titleBrush = new SolidBrush(Color.FromArgb(238, 245, 250));
-        using var redBrush = new SolidBrush(Color.FromArgb(235, 30, 52));
-        using var eyebrowFont = new Font("Segoe UI", 12F, FontStyle.Bold);
-        using var titleFont = new Font("Segoe UI Black", 66F, FontStyle.Bold | FontStyle.Italic);
-        using var redFont = new Font("Segoe UI Black", 75F, FontStyle.Bold | FontStyle.Italic);
-        g.DrawString("YOUR NEXT GAME STARTS HERE", eyebrowFont, eyebrowBrush, 40, 35);
-        g.DrawString("QUBE", titleFont, titleBrush, 36, 75);
-        g.DrawString("2K23", redFont, redBrush, 36, 135);
+        // Original QUBE athletes, lit like a cinematic game-cover scene.
+        DrawPlayer(g, r.Width - 585, 104, 1.02f, Color.FromArgb(22, 92, 205), Color.FromArgb(125, 190, 255));
+        DrawPlayer(g, r.Width - 390, 53, 1.22f, Color.FromArgb(190, 30, 52), Color.FromArgb(255, 185, 105));
+        DrawPlayer(g, r.Width - 175, 115, 0.94f, Color.FromArgb(25, 125, 105), Color.FromArgb(120, 255, 210));
+        DrawBasketball(g, r.Width - 355, r.Height - 170, 82);
+
+        // Left-side title treatment with a red accent rail and layered typography.
+        using var rail = new LinearGradientBrush(new Rectangle(36, 40, 5, 205), Color.FromArgb(70, 140, 255), Color.FromArgb(245, 35, 58), 90f);
+        g.FillRectangle(rail, 36, 40, 5, 205);
+        using var eyebrowFont = new Font("Segoe UI", 10F, FontStyle.Bold);
+        using var titleFont = new Font("Segoe UI Black", 64F, FontStyle.Bold | FontStyle.Italic);
+        using var subFont = new Font("Segoe UI Black", 70F, FontStyle.Bold | FontStyle.Italic);
+        using var eyebrowBrush = new SolidBrush(Color.FromArgb(115, 190, 255));
+        using var titleBrush = new SolidBrush(Color.FromArgb(248, 250, 255));
+        using var redBrush = new SolidBrush(Color.FromArgb(245, 42, 62));
+        using var shadow = new SolidBrush(Color.FromArgb(150, 0, 0, 0));
+        g.DrawString("THE NEXT GENERATION OF STREETBALL", eyebrowFont, eyebrowBrush, 54, 44);
+        g.DrawString("QUBE", titleFont, shadow, 56, 91);
+        g.DrawString("QUBE", titleFont, titleBrush, 51, 86);
+        g.DrawString("2K23", subFont, shadow, 56, 151);
+        g.DrawString("2K23", subFont, redBrush, 51, 146);
+
+        using var tagFont = new Font("Segoe UI", 10F, FontStyle.Bold);
+        using var tagBrush = new SolidBrush(Color.FromArgb(205, 220, 242));
+        using var tagBg = new SolidBrush(Color.FromArgb(95, 20, 42, 78));
+        g.FillRectangle(tagBg, 53, 238, 290, 29);
+        g.DrawString("PLAY  •  COMPETE  •  OWN THE COURT", tagFont, tagBrush, 64, 244);
     }
 
     private static void DrawPlayer(Graphics g, int x, int y, float scale, Color jersey, Color trim)
@@ -170,34 +191,57 @@ public sealed class MainForm : Form
         g.TranslateTransform(x, y);
         g.ScaleTransform(scale, scale);
         g.SmoothingMode = SmoothingMode.AntiAlias;
-        using var skin = new SolidBrush(Color.FromArgb(165, 105, 78));
-        using var shorts = new SolidBrush(Color.FromArgb(12, 19, 34));
-        using var jerseyBrush = new LinearGradientBrush(new Rectangle(12, 58, 100, 128), ControlPaint.Light(jersey), jersey, 0f);
-        using var outline = new Pen(Color.FromArgb(220, 8, 12, 22), 5);
-        using var accent = new Pen(trim, 5);
-        // Head and neck
-        g.FillEllipse(skin, 43, 8, 43, 48);
-        g.FillRectangle(skin, 54, 48, 22, 20);
-        // Arms
-        using var arm = new Pen(skin, 20) { StartCap = LineCap.Round, EndCap = LineCap.Round };
-        g.DrawLine(arm, 25, 72, 3, 142);
-        g.DrawLine(arm, 98, 72, 126, 132);
-        // Jersey torso
-        Point[] torso = { new(30, 58), new(86, 58), new(111, 178), new(8, 178) };
-        g.FillPolygon(jerseyBrush, torso);
-        g.DrawPolygon(outline, torso);
-        g.DrawLine(accent, 31, 61, 85, 61);
-        g.DrawLine(accent, 31, 62, 22, 166);
-        g.DrawLine(accent, 85, 62, 96, 166);
-        // Shorts and legs
-        g.FillRectangle(shorts, 15, 174, 90, 48);
-        g.DrawLine(outline, 59, 178, 59, 220);
-        using var leg = new Pen(skin, 22) { StartCap = LineCap.Round, EndCap = LineCap.Round };
-        g.DrawLine(leg, 36, 218, 28, 286);
-        g.DrawLine(leg, 84, 218, 96, 286);
-        using var shoe = new SolidBrush(trim);
-        g.FillRectangle(shoe, 9, 278, 42, 15);
-        g.FillRectangle(shoe, 78, 278, 42, 15);
+
+        using var skin = new LinearGradientBrush(new Rectangle(22, 10, 100, 290), Color.FromArgb(220, 160, 125), Color.FromArgb(92, 52, 42), 25f);
+        using var jerseyBrush = new LinearGradientBrush(new Rectangle(10, 64, 120, 145), ControlPaint.Light(jersey, .35f), ControlPaint.Dark(jersey, .35f), 0f);
+        using var shortsBrush = new LinearGradientBrush(new Rectangle(18, 184, 100, 65), Color.FromArgb(35, 46, 70), Color.FromArgb(7, 12, 24), 90f);
+        using var outline = new Pen(Color.FromArgb(235, 4, 8, 18), 7) { LineJoin = LineJoin.Round };
+        using var edge = new Pen(Color.FromArgb(180, trim), 3) { LineJoin = LineJoin.Round };
+        using var arm = new Pen(skin, 25) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+        using var leg = new Pen(skin, 25) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+        using var shoe = new LinearGradientBrush(new Rectangle(0, 0, 54, 22), trim, Color.FromArgb(12, 18, 32), 0f);
+
+        // Athletic pose with curved shoulders, tapered torso and dimensional limbs.
+        g.DrawLine(arm, 35, 88, 8, 155);
+        g.DrawLine(arm, 103, 83, 132, 145);
+        g.FillEllipse(skin, 22, 8, 68, 76);
+        g.FillEllipse(new SolidBrush(Color.FromArgb(210, 15, 12, 14)), 20, 3, 72, 34);
+        g.FillRectangle(skin, 46, 67, 28, 22);
+
+        using var torso = new GraphicsPath();
+        torso.AddBezier(28, 76, 12, 67, 10, 89, 17, 117);
+        torso.AddLine(17, 117, 27, 194);
+        torso.AddBezier(27, 194, 53, 207, 88, 207, 112, 193);
+        torso.AddLine(112, 193, 124, 112);
+        torso.AddBezier(124, 112, 137, 83, 116, 67, 99, 76);
+        torso.AddBezier(99, 76, 82, 91, 48, 91, 28, 76);
+        g.FillPath(jerseyBrush, torso);
+        g.DrawPath(outline, torso);
+        g.DrawPath(edge, torso);
+
+        // Neckline, side panels and jersey number.
+        using var neck = new Pen(Color.FromArgb(230, 8, 13, 25), 7);
+        g.DrawArc(neck, 43, 67, 43, 32, 5, 170);
+        using var panel = new Pen(Color.FromArgb(170, trim), 5);
+        g.DrawLine(panel, 30, 105, 37, 183);
+        g.DrawLine(panel, 104, 105, 96, 183);
+        using var numberFont = new Font("Segoe UI Black", 34F, FontStyle.Bold | FontStyle.Italic);
+        using var numberBrush = new SolidBrush(Color.FromArgb(225, 255, 255, 255));
+        g.DrawString("23", numberFont, numberBrush, 48, 122);
+
+        g.FillPath(shortsBrush, RoundedRect(new Rectangle(22, 187, 96, 64), 12));
+        g.DrawLine(outline, 69, 194, 69, 246);
+        g.DrawLine(leg, 47, 239, 39, 300);
+        g.DrawLine(leg, 94, 239, 105, 300);
+        g.FillRectangle(shoe, 14, 293, 53, 20);
+        g.FillRectangle(shoe, 83, 293, 55, 20);
+        using var sole = new Pen(Color.FromArgb(230, 245, 248, 255), 3);
+        g.DrawLine(sole, 14, 312, 67, 312);
+        g.DrawLine(sole, 83, 312, 138, 312);
+
+        // Rim light separates each player from the dark arena.
+        using var rim = new Pen(Color.FromArgb(80, trim), 5);
+        g.DrawArc(rim, 16, 8, 78, 78, 205, 110);
         g.Restore(state);
     }
 
