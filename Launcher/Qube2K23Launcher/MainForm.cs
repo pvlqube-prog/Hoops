@@ -367,23 +367,26 @@ public sealed class MainForm : Form
                 _installStatus.Text = _gameExe is not null && File.Exists(_gameExe) ? "●  GAME FOUND" : "●  SELECT OR SCAN YOUR GAME";
                 break;
             case "PLAY":
-                if (_gameExe is not null && File.Exists(_gameExe)) LaunchLocalGame();
-                else MessageBox.Show("Choose your game folder or run a scan before launching.", "Game not found", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                ShowSectionPage("PLAY", "Launch your supported local installation.", "GAME STATUS", _gameExe is not null && File.Exists(_gameExe) ? "Game executable selected and ready to launch." : "No game executable selected. Choose a folder from Game Installation or Settings.", "LAUNCH GAME", () =>
+                {
+                    if (_gameExe is not null && File.Exists(_gameExe)) LaunchLocalGame();
+                    else MessageBox.Show(this, "Choose your game folder or run a scan before launching.", "Game not found", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                });
                 break;
             case "SETTINGS":
                 ShowSettingsDialog();
                 break;
             case "UPGRADES":
-                ShowFeatureNotice("Upgrades", "The upgrades service is not connected yet. No purchases, player upgrades, or account changes are available in this launcher.");
+                ShowSectionPage("UPGRADES", "Player progression and customization.", "SERVICE STATUS", "The upgrades service is not connected yet. Player upgrades, account changes, and purchases are currently unavailable.", "VIEW SUPPORT", ShowSupportDialog);
                 break;
             case "MYCAREER":
-                ShowFeatureNotice("MyCAREER", "MyCAREER requires a supported game mode and connected game service. This launcher does not currently provide a MyCAREER backend.");
+                ShowSectionPage("MYCAREER", "Your basketball journey starts here.", "MODE STATUS", "MyCAREER is not playable in this launcher yet. A supported game mode and connected career backend are required.", "VIEW SUPPORT", ShowSupportDialog);
                 break;
             case "STORE":
-                ShowFeatureNotice("QUBE Store", "The store is not connected to a verified catalog or payment service. No purchases are available here.");
+                ShowSectionPage("QUBE STORE", "Official QUBE content and offers.", "STORE STATUS", "The store is not connected to a verified catalog or payment service. No items are for sale and no purchases can be made here.", "VIEW SUPPORT", ShowSupportDialog);
                 break;
             case "SUPPORT":
-                ShowSupportDialog();
+                ShowSectionPage("SUPPORT", "Troubleshoot your launcher installation.", "SUPPORT TOOLS", "Open diagnostics to copy your selected game path, community endpoint, and launch-log location.", "OPEN DIAGNOSTICS", ShowSupportDialog);
                 break;
             case "MORE":
                 var menu = new ContextMenuStrip();
@@ -393,6 +396,38 @@ public sealed class MainForm : Form
                 menu.Show(Cursor.Position);
                 break;
         }
+    }
+
+    private void ShowSectionPage(string title, string subtitle, string sectionTitle, string details, string actionText, Action action)
+    {
+        using var page = new Form
+        {
+            Text = $"QUBE 2K23 | {title}",
+            Size = new Size(900, 620),
+            MinimumSize = new Size(760, 520),
+            StartPosition = FormStartPosition.CenterParent,
+            BackColor = Color.FromArgb(6, 10, 21),
+            ForeColor = Color.White,
+            Font = new Font("Segoe UI", 10F)
+        };
+        var header = new Panel { Dock = DockStyle.Top, Height = 132, BackColor = Color.FromArgb(10, 19, 39), Padding = new Padding(34, 22, 34, 12) };
+        var brand = new Label { Text = "QUBE 2K23  /  " + title, Dock = DockStyle.Top, Height = 34, Font = new Font("Segoe UI Black", 19F, FontStyle.Bold | FontStyle.Italic), ForeColor = Color.White };
+        var sub = new Label { Text = subtitle, Dock = DockStyle.Top, Height = 32, Font = new Font("Segoe UI", 11F), ForeColor = Color.FromArgb(170, 195, 230) };
+        header.Controls.Add(sub);
+        header.Controls.Add(brand);
+        page.Controls.Add(header);
+        var content = new Panel { Dock = DockStyle.Fill, Padding = new Padding(42), BackColor = Color.FromArgb(7, 12, 25) };
+        var section = new Label { Text = sectionTitle, Location = new Point(42, 48), Size = new Size(700, 34), Font = new Font("Segoe UI", 13F, FontStyle.Bold), ForeColor = Color.FromArgb(110, 175, 255) };
+        var message = new Label { Text = details, Location = new Point(42, 94), Size = new Size(740, 112), Font = new Font("Segoe UI", 12F), ForeColor = Color.Gainsboro };
+        var actionButton = new Button { Text = actionText, Location = new Point(42, 238), Size = new Size(230, 48) };
+        StyleButton(actionButton, Color.FromArgb(165, 28, 48));
+        actionButton.Click += (_, _) => action();
+        var backButton = new Button { Text = "BACK TO HOME", Location = new Point(290, 238), Size = new Size(180, 48) };
+        StyleButton(backButton, Color.FromArgb(28, 43, 70));
+        backButton.Click += (_, _) => page.Close();
+        content.Controls.AddRange(new Control[] { section, message, actionButton, backButton });
+        page.Controls.Add(content);
+        page.ShowDialog(this);
     }
 
     private void ShowFeatureNotice(string title, string message)
