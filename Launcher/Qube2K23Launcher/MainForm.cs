@@ -135,14 +135,8 @@ public sealed class MainForm : Form
         // Arena atmosphere: overhead lights, haze, crowd band and a reflective court.
         using (var haze = new SolidBrush(Color.FromArgb(34, 30, 105, 220)))
             g.FillEllipse(haze, r.Width - 760, -250, 900, 650);
-        using (var glow = new PathGradientBrush(new[] {
-            new Point(r.Width - 410, 12), new Point(r.Width - 50, 12),
-            new Point(r.Width - 5, 270), new Point(r.Width - 660, 270) }))
-        {
-            glow.CenterColor = Color.FromArgb(48, 90, 150, 255);
-            glow.SurroundColors = new[] { Color.FromArgb(0, 10, 25, 55), Color.FromArgb(0, 10, 25, 55), Color.FromArgb(0, 10, 25, 55), Color.FromArgb(0, 10, 25, 55) };
-            g.FillRectangle(new SolidBrush(Color.FromArgb(12, 100, 150, 255)), r.Width - 690, 0, 690, 370);
-        }
+        using (var glow = new SolidBrush(Color.FromArgb(18, 80, 135, 255)))
+            g.FillEllipse(glow, r.Width - 690, -140, 760, 520);
         using var crowd = new LinearGradientBrush(new Rectangle(0, 260, r.Width, 115), Color.FromArgb(0, 15, 25, 45), Color.FromArgb(130, 2, 5, 13), 90f);
         g.FillRectangle(crowd, 0, 260, r.Width, 115);
         using var beams = new Pen(Color.FromArgb(24, 150, 190, 255), 3);
@@ -205,7 +199,8 @@ public sealed class MainForm : Form
         g.DrawLine(arm, 35, 88, 8, 155);
         g.DrawLine(arm, 103, 83, 132, 145);
         g.FillEllipse(skin, 22, 8, 68, 76);
-        g.FillEllipse(new SolidBrush(Color.FromArgb(210, 15, 12, 14)), 20, 3, 72, 34);
+        using (var hair = new SolidBrush(Color.FromArgb(210, 15, 12, 14)))
+            g.FillEllipse(hair, 20, 3, 72, 34);
         g.FillRectangle(skin, 46, 67, 28, 22);
 
         using var torso = new GraphicsPath();
