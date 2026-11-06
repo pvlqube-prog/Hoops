@@ -23,8 +23,8 @@ public sealed class MainForm : Form
     public MainForm()
     {
         Text = "QUBE 2K23";
-        MinimumSize = new Size(820, 620);
-        Size = new Size(1040, 760);
+        MinimumSize = new Size(900, 680);
+        Size = new Size(1180, 820);
         StartPosition = FormStartPosition.CenterScreen;
         BackColor = Color.FromArgb(9, 13, 24);
         ForeColor = Color.White;
@@ -37,31 +37,39 @@ public sealed class MainForm : Form
 
     private void BuildInterface()
     {
-        var header = new Panel { Dock = DockStyle.Top, Height = 112, BackColor = Color.FromArgb(14, 21, 38), Padding = new Padding(30, 18, 25, 12) };
+        var header = new Panel { Dock = DockStyle.Top, Height = 118, BackColor = Color.FromArgb(8, 12, 22), Padding = new Padding(30, 18, 25, 12) };
         header.Paint += (_, e) =>
         {
             using var brush = new LinearGradientBrush(header.ClientRectangle, Color.FromArgb(27, 42, 75), Color.FromArgb(12, 17, 31), 0f);
             e.Graphics.FillRectangle(brush, header.ClientRectangle);
         };
-        var brand = new Label { Text = "QUBE", AutoSize = true, Font = new Font("Segoe UI", 25F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(28, 13), BackColor = Color.Transparent };
-        var tag = new Label { Text = "2K23  /  LOCAL GAME LAUNCHER", AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = Color.FromArgb(125, 167, 255), Location = new Point(32, 65), BackColor = Color.Transparent };
+        var brand = new Label { Text = "QUBE", AutoSize = true, Font = new Font("Segoe UI", 30F, FontStyle.Bold), ForeColor = Color.White, Location = new Point(28, 13), BackColor = Color.Transparent };
+        var tag = new Label { Text = "2K23  •  PC GAME LAUNCHER", AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = Color.FromArgb(125, 167, 255), Location = new Point(32, 65), BackColor = Color.Transparent };
         header.Controls.Add(brand); header.Controls.Add(tag); Controls.Add(header);
 
-        var content = new Panel { Dock = DockStyle.Fill, Padding = new Padding(28), BackColor = BackColor };
+        var content = new Panel { Dock = DockStyle.Fill, Padding = new Padding(28), BackColor = Color.FromArgb(7, 10, 18) };
+        content.Paint += (_, e) =>
+        {
+            using var bg = new LinearGradientBrush(content.ClientRectangle, Color.FromArgb(12, 20, 36), Color.FromArgb(5, 8, 15), 90f);
+            e.Graphics.FillRectangle(bg, content.ClientRectangle);
+            using var gridPen = new Pen(Color.FromArgb(13, 70, 112, 170), 1);
+            for (int x = 0; x < content.Width; x += 42) e.Graphics.DrawLine(gridPen, x, 0, x, content.Height);
+            for (int y = 0; y < content.Height; y += 42) e.Graphics.DrawLine(gridPen, 0, y, content.Width, y);
+        };
         Controls.Add(content);
 
-        var hero = MakeCard(new Point(28, 24), new Size(930, 205), Color.FromArgb(21, 32, 56), Color.FromArgb(12, 19, 36));
-        var eyebrow = new Label { Text = "YOUR COURT IS WAITING", AutoSize = true, Location = new Point(26, 22), ForeColor = Color.FromArgb(126, 166, 255), Font = new Font("Segoe UI", 9F, FontStyle.Bold), BackColor = Color.Transparent };
-        var heading = new Label { Text = "NBA 2K23", AutoSize = true, Location = new Point(22, 48), ForeColor = Color.White, Font = new Font("Segoe UI", 29F, FontStyle.Bold), BackColor = Color.Transparent };
-        var sub = new Label { Text = "Find the game on this PC and launch from its local installation.", AutoSize = true, Location = new Point(28, 111), ForeColor = Color.FromArgb(176, 190, 216), BackColor = Color.Transparent };
+        var hero = MakeCard(new Point(28, 20), new Size(1060, 250), Color.FromArgb(21, 32, 56), Color.FromArgb(12, 19, 36));
+        hero.Paint += (_, e) => DrawHeroArtwork(e.Graphics, hero.ClientRectangle);\n        var eyebrow = new Label { Text = "YOUR NEXT GAME STARTS HERE", AutoSize = true, Location = new Point(32, 24), ForeColor = Color.FromArgb(126, 166, 255), Font = new Font("Segoe UI", 9F, FontStyle.Bold), BackColor = Color.Transparent };
+        var heading = new Label { Text = "NBA 2K23", AutoSize = true, Location = new Point(28, 58), ForeColor = Color.White, Font = new Font("Segoe UI", 38F, FontStyle.Bold), BackColor = Color.Transparent };
+        var sub = new Label { Text = "Find the game on this PC and launch from its local installation.", AutoSize = true, Location = new Point(34, 125), ForeColor = Color.FromArgb(176, 190, 216), BackColor = Color.Transparent };
         _playButton.Text = "▶   PLAY NOW";
-        StyleButton(_playButton, new Point(28, 148), new Size(210, 44), Color.FromArgb(75, 105, 255));
+        StyleButton(_playButton, new Point(34, 174), new Size(250, 54), Color.FromArgb(28, 104, 255));\n        _playButton.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
         _playButton.Enabled = false;
         _playButton.Click += (_, _) => LaunchLocalGame();
         hero.Controls.AddRange(new Control[] { eyebrow, heading, sub, _playButton });
         content.Controls.Add(hero);
 
-        var install = MakeCard(new Point(28, 250), new Size(930, 120), Color.FromArgb(22, 29, 47), Color.FromArgb(15, 21, 36));
+        var install = MakeCard(new Point(28, 290), new Size(1060, 120), Color.FromArgb(22, 29, 47), Color.FromArgb(15, 21, 36));
         install.Controls.Add(new Label { Text = "GAME INSTALLATION", AutoSize = true, Location = new Point(20, 14), ForeColor = Color.FromArgb(130, 164, 230), Font = new Font("Segoe UI", 8.5F, FontStyle.Bold), BackColor = Color.Transparent });
         _gamePath.Text = "Searching this computer for NBA2K23.exe…";
         _gamePath.Location = new Point(20, 43); _gamePath.Size = new Size(850, 25);
@@ -70,14 +78,14 @@ public sealed class MainForm : Form
         _scanStatus.Location = new Point(20, 76); _scanStatus.AutoSize = true; _scanStatus.ForeColor = Color.FromArgb(156, 170, 196); _scanStatus.BackColor = Color.Transparent;
         install.Controls.Add(_gamePath); install.Controls.Add(_scanStatus);
         _scanButton.Text = "SCAN AGAIN";
-        StyleButton(_scanButton, new Point(780, 68), new Size(125, 34), Color.FromArgb(43, 58, 88));
+        StyleButton(_scanButton, new Point(900, 68), new Size(135, 34), Color.FromArgb(43, 58, 88));
         _scanButton.Click += async (_, _) => await ScanComputerAsync();
         install.Controls.Add(_scanButton);
         content.Controls.Add(install);
 
-        var server = MakeCard(new Point(28, 390), new Size(930, 150), Color.FromArgb(22, 29, 47), Color.FromArgb(15, 21, 36));
+        var server = MakeCard(new Point(28, 430), new Size(1060, 150), Color.FromArgb(22, 29, 47), Color.FromArgb(15, 21, 36));
         server.Controls.Add(new Label { Text = "COMMUNITY SERVICE STATUS  ·  OPTIONAL", AutoSize = true, Location = new Point(20, 15), ForeColor = Color.FromArgb(130, 164, 230), Font = new Font("Segoe UI", 8.5F, FontStyle.Bold), BackColor = Color.Transparent });
-        _serverUrl.Location = new Point(20, 48); _serverUrl.Size = new Size(650, 30);
+        _serverUrl.Location = new Point(20, 48); _serverUrl.Size = new Size(780, 32);
         _serverUrl.BackColor = Color.FromArgb(10, 16, 29); _serverUrl.ForeColor = Color.White; _serverUrl.BorderStyle = BorderStyle.FixedSingle;
         server.Controls.Add(_serverUrl);
         var check = new Button { Text = "CHECK", Location = new Point(690, 46), Size = new Size(100, 32) };
@@ -91,10 +99,36 @@ public sealed class MainForm : Form
 
         var foot = new Label
         {
-            Text = "LOCAL FILES ONLY • No game files are downloaded or modified. If this installation requires Steam or another ownership check, this launcher will not bypass it. NBA 2K23 official online services have been retired; this optional check does not restore official multiplayer.",
-            Location = new Point(30, 560), Size = new Size(910, 46), ForeColor = Color.FromArgb(116, 131, 158), Font = new Font("Segoe UI", 8F), BackColor = Color.Transparent
+            Text = "QUBE LAUNCHER  •  LOCAL FILES ONLY  •  No game files are downloaded or modified. If this installation requires Steam or another ownership check, this launcher will not bypass it. NBA 2K23 official online services have been retired; this optional check does not restore official multiplayer.",
+            Location = new Point(30, 600), Size = new Size(1030, 48), ForeColor = Color.FromArgb(116, 131, 158), Font = new Font("Segoe UI", 8F), BackColor = Color.Transparent
         };
         content.Controls.Add(foot);
+    }
+
+    private static void DrawHeroArtwork(Graphics g, Rectangle bounds)
+    {
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        using var glow = new LinearGradientBrush(bounds, Color.FromArgb(30, 62, 112), Color.FromArgb(8, 13, 27), 0f);
+        g.FillRectangle(glow, bounds);
+        using var beam = new Pen(Color.FromArgb(34, 112, 170, 255), 3);
+        for (int i = 0; i < 7; i++)
+            g.DrawLine(beam, bounds.Width - 360 + i * 42, 0, bounds.Width - 520 + i * 80, bounds.Height);
+        using var court = new Pen(Color.FromArgb(75, 126, 169, 220), 2);
+        g.DrawArc(court, bounds.Width - 390, 50, 300, 190, 185, 170);
+        g.DrawLine(court, bounds.Width - 360, bounds.Height - 24, bounds.Width - 35, bounds.Height - 24);
+        // Original stylized basketball artwork, not copied game or player imagery.
+        int bx = bounds.Width - 245, by = 42, d = 150;
+        using var ballBrush = new LinearGradientBrush(new Rectangle(bx, by, d, d),
+            Color.FromArgb(255, 173, 65), Color.FromArgb(170, 55, 20), 45f);
+        g.FillEllipse(ballBrush, bx, by, d, d);
+        using var ballPen = new Pen(Color.FromArgb(230, 35, 20, 16), 4);
+        g.DrawEllipse(ballPen, bx, by, d, d);
+        g.DrawArc(ballPen, bx + 34, by - 4, 82, d + 8, 90, 180);
+        g.DrawArc(ballPen, bx - 4, by + 34, d + 8, 82, 0, 180);
+        using var shine = new Pen(Color.FromArgb(65, 255, 255, 255), 7);
+        g.DrawArc(shine, bx + 12, by + 10, 55, 55, 205, 95);
+        using var shadow = new SolidBrush(Color.FromArgb(65, 0, 0, 0));
+        g.FillEllipse(shadow, bx - 20, by + d - 4, d + 40, 24);
     }
 
     private static Panel MakeCard(Point location, Size size, Color top, Color bottom)
